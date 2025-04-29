@@ -24,32 +24,6 @@ if (key_path == "") {
   stop("Google Sheets key environment variable not found")
 }
 
-library(shiny)
-library(googlesheets4)
-library(dplyr)
-library(ggplot2)
-library(gridExtra)
-library(this.path)
-library(shinyjs)  
-library(knitr)
-library(rmarkdown)
-library(tools)
-library(openxlsx)
-library(xtable)
-library(grid)
-library(ggpubr)
-library(stringr)
-library(cowplot)
-library(tidyr)
-
-setwd(this.path::here())
-
-# Use environment variable to authenticate
-key_path <- Sys.getenv("google_sheets_key", "")
-if (key_path == "") {
-  stop("Google Sheets key environment variable not found")
-}
-
 # Define UI
 ui <- fluidPage(
   useShinyjs(),  # Initialize shinyjs
@@ -232,9 +206,130 @@ ui <- fluidPage(
       }
     }
     ")),
-    
+  
     # Add the reference to external JavaScript file here
     tags$script(src = "svo.js")
+  )
+  
+  # Create data for SVO items display
+  svo_items <- user_responses %>%
+    select(starts_with("SVO")) %>%
+    select(SVO1:SVO6, SVO1_Self:SVO6_Other) %>%
+    pivot_longer(cols = starts_with("SVO"), names_to = "Item", values_to = "Value")
+  
+  # Merge with benchmarks
+  df <- merge(summary_scores, benchmarks, by = "Category")
+  
+  # Render the Rmd template
+  report_path <- tempfile(fileext = ".pdf")
+  message("Report path: ", report_path)
+  
+  tryCatch({
+    # Update the render call
+    rmarkdown::render("report_template.Rmd", 
+                    output_file = report_path, 
+                    params = list(
+                      name = user_responses$Name,
+                      df = df,
+                      planning_items = planning_items,
+                      bargaining_items = bargaining_items,
+                      implementation_items = implementation_items,
+                      nfc_items = nfc_items,      # Add NFC items
+                      ncs_items = ncs_items,      # Add NCS items
+                      svo_angle = user_responses$SVO_angle,
+                      svo_type = svo_type_label,  # Add SVO type label
+                      svo_items = svo_items       # Add SVO items data
+                    ))
+    message("Report generated successfully.")
+  }, error = function(e) {
+    message("Error generating report: ", e$message)
+  })
+  
+  return(report_path)
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)
+  
+  # Prepare data for the report
+  summary_scores <- data.frame(
+    Category = c("pre_count", "pre_arena", "pre_preps", "pre_imp", "pre",
+                 "barg_mut", "barg_com", "barg_arg", "barg_get", "barg",
+                 "imp_imp", "imp_feedb", "imp",
+                # New NFC categories
+                 "nfc_order", "nfc_predictability", "nfc_decisiveness", 
+                 "nfc_ambiguity", "nfc_closemindedness", "nfc_total",
+                # New NCS category
+                 "ncs_total",
+                # SVO
+                 "SVO_angle"),
+    Your_Response = c(
+      user_responses$pre_count,
+      user_responses$pre_arena,
+      user_responses$pre_preps,
+      user_responses$pre_imp,
+      user_responses$pre,
+      user_responses$barg_mut,
+      user_responses$barg_com,
+      user_responses$barg_arg,
+      user_responses$barg_get,
+      user_responses$barg,
+      user_responses$imp_imp,
+      user_responses$imp_feedb,
+      user_responses$imp,
+      # New NFC responses
+      user_responses$nfc_order,
+      user_responses$nfc_predictability,
+      user_responses$nfc_decisiveness, 
+      user_responses$nfc_ambiguity,
+      user_responses$nfc_closemindedness,
+      user_responses$nfc_total,
+      # New NCS response
+      user_responses$ncs_total,
+      # SVO angle
+      user_responses$SVO_angle
+    )
+  )
+  
+  # Convert user_responses to a list if it's not already
+  user_responses_list <- as.list(user_responses)
+  
+  # Create separate lists for planning, bargaining, and implementation items
+  planning_items <- user_responses %>%
+    select(starts_with("Plan")) %>%
+    pivot_longer(cols = everything(), names_to = "Item", values_to = "Score")
+  
+  bargaining_items <- user_responses %>%
+    select(starts_with("Barg")) %>%
+    pivot_longer(cols = everything(), names_to = "Item", values_to = "Score")
+  
+  implementation_items <- user_responses %>%
+    select(starts_with("Post")) %>%
+    pivot_longer(cols = everything(), names_to = "Item", values_to = "Score")
+  
+  # Create separate list for NFC items
+  nfc_items <- user_responses %>%
+    select(starts_with("NFC")) %>%
+    pivot_longer(cols = everything(), names_to = "Item", values_to = "Score")
+  
+  # Create separate list for NCS items
+  ncs_items <- user_responses %>%
+    select(starts_with("NCS")) %>%
+    pivot_longer(cols = everything(), names_to = "Item", values_to = "Score")
+    
+  # Create list for SVO data
+  svo_data <- data.frame(
+    SVO_angle = user_responses$SVO_angle,
+    SVO_type = user_responses$SVO_type
+  )
+  
+  # Map SVO type to a label for reporting
+  svo_type_label <- case_when(
+    user_responses$SVO_type == 1 ~ "Competitive",
+    user_responses$SVO_type == 2 ~ "Individualistic",
+    user_responses$SVO_type == 3 ~ "Prosocial",
+    user_responses$SVO_type == 4 ~ "Altruistic",
+    TRUE ~ "Not classified"
   ),
 
   fluidRow(
@@ -306,6 +401,44 @@ ui <- fluidPage(
                 onclick = sprintf("Shiny.setInputValue('plan%d', %d, {priority: 'event'})", i, j)
               )
             })
+    }
+  })
+  
+  output$downloadReport <- downloadHandler(
+    filename = function() {
+      paste0("report_", gsub("[^[:alnum:]]", "_", input$name), ".pdf")
+    },
+    content = function(file) {
+      file.copy(report(), file)
+    }
+  )
+}
+
+
+# Helper function to generate report
+generate_report <- function(user_responses) {
+  # Define benchmarks
+  benchmarks <- data.frame(
+    Category = c("pre_count", "pre_arena", "pre_preps", "pre_imp", "pre",
+                 "barg_mut", "barg_com", "barg_arg", "barg_get", "barg",
+                 "imp_imp", "imp_feedb", "imp",
+                # New NFC categories
+                 "nfc_order", "nfc_predictability", "nfc_decisiveness", 
+                 "nfc_ambiguity", "nfc_closemindedness", "nfc_total",
+                # New NCS category
+                 "ncs_total",
+                # SVO
+                 "SVO_angle"),
+    Benchmark = c(4.4, 4.61, 5.1, 4.37, 4.66, 
+                  4.67, 5.28, 5.13, 3.62, 4.55,
+                  5.26, 4.16, 4.82,
+                  # New NFC benchmarks (replace with actual benchmarks if available)
+                  4.2, 3.9, 4.1, 4.3, 3.8, 4.05,
+                  # NCS benchmark (replace with actual benchmark if available)
+                  3.5,
+                  # SVO angle benchmark (average is typically around 30-35 degrees - prosocial)
+                  32.1)
+  )
           ),
           br()
         )
@@ -649,6 +782,7 @@ ui <- fluidPage(
           actionButton("submit", "Submit"),
           uiOutput("downloadButton")
       ),
+      
       
       tags$div(id = "loading", style = "display: none;",
                tags$p("Processing your responses and generating report. Please wait...")
@@ -1000,6 +1134,7 @@ server <- function(input, output, session) {
         shinyjs::removeClass("submit", "disabled-button")
         shinyjs::alert(paste("An error occurred:", e$message))
       })
+     })
     }
   })
   
