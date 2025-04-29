@@ -209,8 +209,8 @@ ui <- fluidPage(
   
     # Add the reference to external JavaScript file here
     tags$script(src = "svo.js")
-  )
-}
+  ),
+
 
 
 # Helper function to generate report
@@ -360,7 +360,7 @@ generate_report <- function(user_responses) {
 shinyApp(ui = ui, server = server),
 
   fluidRow(
-    column(8, titlePanel("Negotiation Behavior Inventory")),
+    column(8, titlePanel("Negotiation Behaviour Inventory")),
     column(4, tags$img(src = "mbslogo.jpg", height = "100px", style = "float:right;"))
   ),
   
@@ -378,7 +378,7 @@ shinyApp(ui = ui, server = server),
       numericInput("age", "Age:", value = 18, min = 1, max = 120),
       selectInput("gender", "Gender:", 
                   choices = c(" ", "Male", "Female", "Other"))
-    ),
+    )),
     
     mainPanel(
       h4("Reflecting on how you negotiated in the past, to what extent would you do the following behaviors before a negotiation?"),
@@ -409,7 +409,7 @@ shinyApp(ui = ui, server = server),
                     "19. Understand your counterpart's no-deal options.",
                     "20. Research the obstacles to an agreement that can result in a no-deal.",
                     "21. Spend time thinking about what you would do if the negotiation ended in a no-deal."
-          )),
+          )))
           div(
             class = "rating-container",
             lapply(1:7, function(j) {
@@ -427,9 +427,10 @@ shinyApp(ui = ui, server = server),
                 )),
                 onclick = sprintf("Shiny.setInputValue('plan%d', %d, {priority: 'event'})", i, j)
               )
-            })
+            
     }
-  })
+            ))}
+  
   
   output$downloadReport <- downloadHandler(
     filename = function() {
@@ -441,8 +442,8 @@ shinyApp(ui = ui, server = server),
   )
           ),
           br()
-        )
-      }),
+        ),
+      
       
       h4("Reflecting on how you negotiated in the past, to what extent would you do the following behaviors during a negotiation?"),
       h4("Each of the behaviors are things people can do during a negotiation."),
@@ -787,9 +788,9 @@ shinyApp(ui = ui, server = server),
       tags$div(id = "loading", style = "display: none;",
                tags$p("Processing your responses and generating report. Please wait...")
       )
-    )
-  )
-)
+    
+)  
+
 
 # Server logic
 server <- function(input, output, session) {
@@ -1134,3 +1135,30 @@ server <- function(input, output, session) {
         shinyjs::removeClass("submit", "disabled-button")
         shinyjs::alert(paste("An error occurred:", e$message))
       })
+}
+  })
+  
+  output$downloadReport <- downloadHandler(
+    filename = function() {
+      paste0("report_", gsub("[^[:alnum:]]", "_", input$name), ".pdf")
+    },
+    content = function(file) {
+      file.copy(report(), file)
+    }
+  )
+}
+
+# Helper function to generate report
+generate_report <- function(user_responses) {
+  # Define benchmarks
+  benchmarks <- data.frame(
+    # ... benchmark definitions ...
+  )
+  
+  # ... rest of generate_report function ...
+  
+  return(report_path)
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)
