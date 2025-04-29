@@ -209,462 +209,6 @@ ui <- fluidPage(
   
     # Add the reference to external JavaScript file here
     tags$script(src = "svo.js")
-  ),
-
-  fluidRow(
-    column(8, titlePanel("Negotiation Behavior Inventory")), # Full width on mobile
-    column(4, tags$img(src = "mbslogo.jpg", height = "100px", style = "float:right;")) # Full width on mobile
-  ),
-  
-  # Add the preamble
-  wellPanel(
-    HTML("<p>We ask you to reflect on your behaviors during negotiations in which you were personally involved. We define the term 'negotiation' in a broad sense. In addition to events commonly thought to involve negotiation, like negotiating a job offer or making a purchase, negotiation can involve attempts to obtain co-operation from others, settle a dispute, resolve legal issues, or convincing someone to follow your plan of action.</p>")
-  ),
-  
-  sidebarLayout(
-    sidebarPanel(
-      textInput("name", "Name (this name will appear on your feedback report):"),
-      div(id = "name_error", class = "error-message"),
-      textInput("email", "Email:"),
-      div(id = "email_error", class = "error-message"),
-      numericInput("age", "Age:", value = 18, min = 1, max = 120),
-      selectInput("gender", "Gender:", 
-                  choices = c(" ", "Male", "Female", "Other"))
-    ),
-    
-    mainPanel(
-      h4("Reflecting on how you negotiated in the past, to what extent would you do the following behaviors before a negotiation?"),
-      h4("Each of the behaviors below are things people can do to prepare for a negotiation."),
-      
-      # Survey items: NPI
-      lapply(1:21, function(i) {
-        tagList(
-          h5(switch(i,
-                    "1. Spend time thinking about your counterpart's goals.",
-                    "2. Spend time studying your counterpart's tactics and patterns of behavior in similar situations.",
-                    "3. Spend time studying the counterpart's emotional state as they enter into negotiations.",
-                    "4. Spend time researching if your counterpart might value things differently than you.",
-                    "5. Spend time researching the counterpart's point of view on the situation.",
-                    "6. Exhaust every source of information at your disposal (including, but not limited to family, friends, co-workers, institutions, the library, and the Internet).",
-                    "7. Research alternative outcomes that satisfy the need of the parties, (i.e., find alternative arrangements that meet you and your counterpart's needs).",
-                    "8. Communicate in advance your intention to negotiate.",
-                    "9. Make sure all relevant parties will be included in the negotiation.",
-                    "10. Establish a shared perception of the situation that requires resolution.",
-                    "11. Attempt to remove or minimize distractions that could draw attention away from the negotiation.",
-                    "12. Spend time researching the events leading to the negotiation.",
-                    "13. Spend time thinking about your goals.",
-                    "14. Prioritize the goals for the negotiation.",
-                    "15. Create a table or list of what you value most to what you value least.",
-                    "16. Ensure that you have the necessary resources to follow through with the deal that you reach.",
-                    "17. Maintain competence in the skills needed to analyze the deal (e.g., technical evaluation, accounting, developing relationships, etc.).",
-                    "18. Understand your no-deal options.",
-                    "19. Understand your counterpart's no-deal options.",
-                    "20. Research the obstacles to an agreement that can result in a no-deal.",
-                    "21. Spend time thinking about what you would do if the negotiation ended in a no-deal."
-          )),
-          div(
-            class = "rating-container",
-            lapply(1:7, function(j) {
-              div(
-                id = paste0("plan", i, "_", j),
-                class = "rating-item",
-                HTML(switch(j,
-                            "1" = "1<br>Would not do<br>this at all",
-                            "2" = "2",
-                            "3" = "3",
-                            "4" = "4<br>Would do this<br>somewhat",
-                            "5" = "5",
-                            "6" = "6",
-                            "7" = "7<br>Would do this<br>a great deal"
-                )),
-                onclick = sprintf("Shiny.setInputValue('plan%d', %d, {priority: 'event'})", i, j)
-              )
-            })
-          ),
-          br()
-        )
-      }),
-      
-      h4("Reflecting on how you negotiated in the past, to what extent would you do the following behaviors during a negotiation?"),
-      h4("Each of the behaviors are things people can do during a negotiation."),
-      
-      # During negotiation survey items
-      lapply(1:26, function(i) {
-        tagList(
-          h5(switch(i,
-                    "1. Have plans in advance to deal with counterproductive (e.g., negative, extreme, irrational) behavior from your counterpart.",
-                    "2. Ask questions to learn about your counterpart.",
-                    "3. Test your understanding of what your counterpart was trying to say by repeating what they said.",
-                    "4. Try to focus on satisfying your underlying needs rather than a specific list of requirements.",
-                    "5. Spend time inventing options for mutual benefit.",
-                    "6. Keep track of how much value is created by systematically evaluating each offer against previous offers.",
-                    "7. Try to reach a deal that touches on all of the issues involved.",
-                    "8. Review the final terms with your counterpart to confirm mutual agreement about their interpretation.",
-                    "9. Make sure that you were fully understood.",
-                    "10. Try to ensure all your interests were met in the agreement.",
-                    "11. Check if your arguments are persuasive.",
-                    "12. Check if your counterpart is telling the truth.",
-                    "13. Check if the counterpart is committed to making a deal with you.",
-                    "14. Make sure the help you are getting is appropriate for the task at hand.",
-                    "15. Justify each offer with a reason.",
-                    "16. Provide reasons that the counterpart should find plausible.",
-                    "17. Present facts that support your offer.",
-                    "18. Support your offer with facts.",
-                    "19. Refuse to make concessions.",
-                    "20. Insist on getting something every time you make a concession.",
-                    "21. Ask for a lot in your offers.",
-                    "22. Avoid making concessions.",
-                    "23. Use your power to make the counterpart concede",
-                    "24. Always try to get something in return for an accommodation you make",
-                    "25. Make ambitious offers.",
-                    "26. Downplay threats made by the counterpart"
-          )),
-          div(
-            class = "rating-container",
-            lapply(1:7, function(j) {
-              div(
-                id = paste0("barg", i, "_", j),
-                class = "rating-item",
-                HTML(switch(j,
-                            "1" = "1<br>Would not do<br>this at all",
-                            "2" = "2",
-                            "3" = "3",
-                            "4" = "4<br>Would do this<br>somewhat",
-                            "5" = "5",
-                            "6" = "6",
-                            "7" = "7<br>Would do this<br>a great deal"
-                )),
-                onclick = sprintf("Shiny.setInputValue('barg%d', %d, {priority: 'event'})", i, j)
-              )
-            })
-          ),
-          br()
-        )
-      }),
-      
-      # New section for after negotiation behaviors
-      h4("Reflecting on how you negotiated in the past, to what extent would you do the following behaviors following a negotiation?"),
-      h4("Each of the behaviors are things people can do after reaching an agreement."),
-      
-      # After negotiation survey items
-      lapply(1:8, function(i) {
-        tagList(
-          h5(switch(i,
-                    "1. Express your commitment to the agreement.",
-                    "2. Check that you have addressed your counterpart's key concerns.",
-                    "3. Agree on a plan to implement every aspect of the agreement.",
-                    "4. Monitor the counterpart's actions to check that they are working to implement the agreement.",
-                    "5. Periodically seek advice about negotiating from a more experienced negotiator.",
-                    "6. Periodically seek advice about negotiating from peers.",
-                    "7. Check with your counterpart about their feelings about the negotiation.",
-                    "8. Check with your counterpart's social network (e.g., their friends, family, colleagues, etc…) about the negotiation."
-          )),
-          div(
-            class = "rating-container",
-            lapply(1:7, function(j) {
-              div(
-                id = paste0("post", i, "_", j),
-                class = "rating-item",
-                HTML(switch(j,
-                            "1" = "1<br>Would not do<br>this at all",
-                            "2" = "2",
-                            "3" = "3",
-                            "4" = "4<br>Would do this<br>somewhat",
-                            "5" = "5",
-                            "6" = "6",
-                            "7" = "7<br>Would do this<br>a great deal"
-                )),
-                onclick = sprintf("Shiny.setInputValue('post%d', %d, {priority: 'event'})", i, j)
-              )
-            })
-          ),
-          br()
-        )
-      }),
-    
-    # Need for Closure Scale
-    h4("Need for Closure Scale"),
-    h4("Please indicate the extent to which you agree or disagree with each of the following statements."),
-    
-    # Survey items for Need for Closure
-    lapply(1:15, function(i) {
-      tagList(
-        h5(switch(i,
-                  "1. I don't like situations that are uncertain.",
-                  "2. I dislike questions which could be answered in many different ways.",
-                  "3. I find that a well ordered life with regular hours suits my temperament.",
-                  "4. I feel uncomfortable when I don't understand the reason why an event occurred in my life.",
-                  "5. I feel irritated when one person disagrees with what everyone else in a group believes.",
-                  "6. I don't like to go into a situation without knowing what I can expect from it.",
-                  "7. When I have made a decision, I feel relieved.",
-                  "8. When I am confronted with a problem, I'm dying to reach a solution very quickly.",
-                  "9. I would quickly become impatient and irritated if I would not find a solution to a problem immediately.",
-                  "10. I don't like to be with people who are capable of unexpected actions.",
-                  "11. I dislike it when a person's statement could mean many different things.",
-                  "12. I find that establishing a consistent routine enables me to enjoy life more.",
-                  "13. I enjoy having a clear and structured mode of life.",
-                  "14. I do not usually consult many different opinions before forming my own view.",
-                  "15. I dislike unpredictable situations."
-        )),
-        div(
-          class = "rating-container",
-          lapply(1:6, function(j) {
-            div(
-              id = paste0("nfc", i, "_", j),
-              class = "rating-item",
-              HTML(switch(j,
-                          "1" = "1<br>Strongly<br>disagree",
-                          "2" = "2<br>Moderately<br>disagree",
-                          "3" = "3<br>Slightly<br>disagree",
-                          "4" = "4<br>Slightly<br>agree",
-                          "5" = "5<br>Moderately<br>agree",
-                          "6" = "6<br>Strongly<br>agree"
-              )),
-              onclick = sprintf("Shiny.setInputValue('nfc%d', %d, {priority: 'event'})", i, j)
-            )
-          })
-        ),
-        br()
-      )
-    }),
-    
-    # Need for Cognition Scale
-    h4("Need for Cognition Scale"),
-    h4("Please indicate the extent to which each statement is characteristic of you."),
-    
-    # Survey items for Need for Cognition
-    lapply(1:18, function(i) {
-      tagList(
-        h5(switch(i,
-                  "1. I would prefer complex to simple problems.",
-                  "2. I like to have the responsibility of handling a situation that requires a lot of thinking.",
-                  "3. Thinking is not my idea of fun.",
-                  "4. I would rather do something that requires little thought than something that is sure to challenge my thinking abilities.",
-                  "5. I try to anticipate and avoid situations where there is likely chance I will have to think in depth about something.",
-                  "6. I find satisfaction in deliberating hard and for long hours.",
-                  "7. I only think as hard as I have to.",
-                  "8. I prefer to think about small, daily projects to long-term ones.",
-                  "9. I like tasks that require little thought once I've learned them.",
-                  "10. The idea of relying on thought to make my way to the top appeals to me.",
-                  "11. I really enjoy a task that involves coming up with new solutions to problems.",
-                  "12. Learning new ways to think doesn't excite me very much.",
-                  "13. I prefer my life to be filled with puzzles that I must solve.",
-                  "14. The notion of thinking abstractly is appealing to me.",
-                  "15. I would prefer a task that is intellectual, difficult, and important to one that is somewhat important but does not require much thought.",
-                  "16. I feel relief rather than satisfaction after completing a task that required a lot of mental effort.",
-                  "17. It's enough for me that something gets the job done; I don't care how or why it works.",
-                  "18. I usually end up deliberating about issues even when they do not affect me personally."
-        )),
-        div(
-          class = "rating-container",
-          lapply(1:5, function(j) {
-            div(
-              id = paste0("ncs", i, "_", j),
-              class = "rating-item",
-              HTML(switch(j,
-                          "1" = "1<br>Extremely<br>Uncharacteristic",
-                          "2" = "2<br>Somewhat<br>Uncharacteristic",
-                          "3" = "3<br>Uncertain",
-                          "4" = "4<br>Somewhat<br>Characteristic",
-                          "5" = "5<br>Extremely<br>Characteristic"
-              )),
-              onclick = sprintf("Shiny.setInputValue('ncs%d', %d, {priority: 'event'})", i, j)
-            )
-          })
-        ),
-        br()
-      )
-    }),
-    
-    # SVO Scale
-    h4("Social Value Orientation"),
-    div(class = "svo-instructions",
-        HTML("<p>In this task you have been randomly paired with another person, whom we will refer to as the other. 
-              This other person is someone you do not know and will remain mutually anonymous. All of your choices are completely confidential.</p>
-              <p>You will be making a series of decisions about allocating resources between you and this other person. 
-              For each of the following questions, please indicate the distribution you prefer most by moving the slider to your preferred position.</p>
-              <p>Your decisions will yield money for both yourself and the other person. There are no right or wrong answers, 
-              this is all about personal preferences. Your choices will influence both the amount of money you receive as well as 
-              the amount of money the other receives.</p>")
-    ),
-    
-    # SVO Slider items
-    lapply(1:6, function(i) {
-      tagList(
-        h5(paste("SVO Item", i)),
-        
-        # Define the self/other values for each slider position
-        tags$div(class = "svo-slider-container",
-                 tags$div(class = "svo-labels",
-                          tags$div(class = "svo-label", "You Receive")
-                 ),
-                 
-                 sliderInput(
-                   inputId = paste0("svo", i),
-                   label = NULL,
-                   min = 1,
-                   max = 9,
-                   value = 5,
-                   step = 1,
-                   width = "100%",
-                   ticks = FALSE
-                 ),
-                 
-                 tags$div(class = "svo-labels",
-                          tags$div(class = "svo-label", "Other Receives")
-                 ),
-                 
-                 # This div will be updated by JavaScript to show the current values
-                 tags$div(id = paste0("svo_values_", i), class = "svo-values")
-                ),
-                
-                # Hidden inputs to store the actual values for self and other
-                tags$div(style = "display: none;",
-                         textInput(paste0("svo", i, "_self_value"), NULL, ""),
-                         textInput(paste0("svo", i, "_other_value"), NULL, "")
-                ),
-                
-                br()
-        )
-      })
-    ),
-    
-    # Add JavaScript to update the SVO values when sliders change
-    tags$script(HTML("
-      // Define SVO values for each item at each position
-      const svoValues = {
-        1: {
-          self: [85, 85, 85, 85, 85, 85, 85, 85, 85],
-          other: [85, 76, 68, 59, 50, 41, 33, 24, 15]
-        },
-        2: {
-          self: [85, 87, 89, 91, 93, 94, 96, 98, 100],
-          other: [15, 19, 24, 28, 33, 37, 41, 46, 50]
-        },
-        3: {
-          self: [50, 54, 59, 63, 68, 72, 76, 81, 85],
-          other: [100, 98, 96, 94, 93, 91, 89, 87, 85]
-        },
-        4: {
-          self: [50, 54, 59, 63, 68, 72, 76, 81, 85],
-          other: [100, 89, 79, 68, 58, 47, 36, 26, 15]
-        },
-        5: {
-          self: [100, 94, 88, 81, 75, 69, 63, 56, 50],
-          other: [50, 56, 63, 69, 75, 81, 88, 94, 100]
-        },
-        6: {
-          self: [100, 98, 96, 94, 93, 91, 89, 87, 85],
-          other: [50, 54, 59, 63, 68, 72, 76, 81, 85]
-        }
-      };
-      
-      // Function to update the displayed values and hidden inputs
-      function updateSVOValues(item, value) {
-        const index = value - 1; // Convert to 0-based index
-        const selfValue = svoValues[item].self[index];
-        const otherValue = svoValues[item].other[index];
-        
-        // Update the values display
-        const valuesContainer = document.getElementById('svo_values_' + item);
-        valuesContainer.innerHTML = '';
-        
-        // Create 9 value columns
-        for (let i = 0; i < 9; i++) {
-          const valueDiv = document.createElement('div');
-          valueDiv.className = 'svo-value';
-          
-          // Add self value
-          const selfDiv = document.createElement('div');
-          selfDiv.className = 'svo-value-self';
-          selfDiv.textContent = svoValues[item].self[i];
-          if (i === index) selfDiv.style.fontWeight = 'bold';
-          
-          // Add divider
-          const divider = document.createElement('div');
-          divider.className = 'svo-divider';
-          if (i === index) divider.style.backgroundColor = '#007bff';
-          
-          // Add other value
-          const otherDiv = document.createElement('div');
-          otherDiv.className = 'svo-value-other';
-          otherDiv.textContent = svoValues[item].other[i];
-          if (i === index) otherDiv.style.fontWeight = 'bold';
-          
-          valueDiv.appendChild(selfDiv);
-          valueDiv.appendChild(divider);
-          valueDiv.appendChild(otherDiv);
-          
-          valuesContainer.appendChild(valueDiv);
-        }
-        
-        // Update hidden inputs with the selected values
-        document.getElementById('svo' + item + '_self_value').value = selfValue;
-        document.getElementById('svo' + item + '_other_value').value = otherValue;
-      }
-      
-      // Initialize all sliders
-      $(document).ready(function() {
-        for (let i = 1; i <= 6; i++) {
-          // Initialize with default value
-          updateSVOValues(i, 5);
-          
-          // Add change listener
-          $('#svo' + i).on('change', function(e) {
-            updateSVOValues(i, parseInt(e.target.value));
-          });
-        }
-      });
-    ")),
-    
-    # Add the submit button and download section
-    tags$p("Click the 'Submit' button below. It will save your responses and after a few seconds, you will get a download link to your individualized feedback report below."),
-    
-    div(class = "button-container",
-        actionButton("submit", "Submit"),
-        uiOutput("downloadButton")
-    ),
-    
-    
-    tags$div(id = "loading", style = "display: none;",
-             tags$p("Processing your responses and generating report. Please wait...")
-    )
-   )
-  )
-)
-
-# Server logic
-server <- function(input, output, session) {
-  
-  is_valid_email <- function(x) {
-    grepl("^[[:alnum:]._%-]+@[[:alnum:].-]+\\.[[:alpha:]]{2,}$", x)
-  }
-  
-  # Reactive value to store the generated report
-  report <- reactiveVal(NULL)
-  
-  # Add this observer to handle the styling of selected items for all question sets
-  observe({
-    # For 'item' questions
-    lapply(1:21, function(i) {
-      selected_value <- input[[paste0("plan", i)]]
-      lapply(1:7, function(j) {
-        if (!is.null(selected_value) && selected_value == j) {
-          shinyjs::addClass(id = paste0("plan", i, "_", j), class = "selected")
-        } else {
-          shinyjs::removeClass(id = paste0("plan", i, "_", j), class = "selected")
-        }
-      })
-    }
-  })
-  
-  output$downloadReport <- downloadHandler(
-    filename = function() {
-      paste0("report_", gsub("[^[:alnum:]]", "_", input$name), ".pdf")
-    },
-    content = function(file) {
-      file.copy(report(), file)
-    }
   )
 }
 
@@ -813,7 +357,463 @@ generate_report <- function(user_responses) {
 }
 
 # Run the application 
-shinyApp(ui = ui, server = server))
+shinyApp(ui = ui, server = server),
+
+  fluidRow(
+    column(8, titlePanel("Negotiation Behavior Inventory")),
+    column(4, tags$img(src = "mbslogo.jpg", height = "100px", style = "float:right;"))
+  ),
+  
+  # Add the preamble
+  wellPanel(
+    HTML("<p>We ask you to reflect on your behaviors during negotiations in which you were personally involved. We define the term 'negotiation' in a broad sense. In addition to events commonly thought to involve negotiation, like negotiating a job offer or making a purchase, negotiation can involve attempts to obtain co-operation from others, settle a dispute, resolve legal issues, or convincing someone to follow your plan of action.</p>")
+  ),
+  
+  sidebarLayout(
+    sidebarPanel(
+      textInput("name", "Name (this name will appear on your feedback report):"),
+      div(id = "name_error", class = "error-message"),
+      textInput("email", "Email:"),
+      div(id = "email_error", class = "error-message"),
+      numericInput("age", "Age:", value = 18, min = 1, max = 120),
+      selectInput("gender", "Gender:", 
+                  choices = c(" ", "Male", "Female", "Other"))
+    ),
+    
+    mainPanel(
+      h4("Reflecting on how you negotiated in the past, to what extent would you do the following behaviors before a negotiation?"),
+      h4("Each of the behaviors below are things people can do to prepare for a negotiation."),
+      
+      # Survey items: NPI
+      lapply(1:21, function(i) {
+        tagList(
+          h5(switch(i,
+                    "1. Spend time thinking about your counterpart's goals.",
+                    "2. Spend time studying your counterpart's tactics and patterns of behavior in similar situations.",
+                    "3. Spend time studying the counterpart's emotional state as they enter into negotiations.",
+                    "4. Spend time researching if your counterpart might value things differently than you.",
+                    "5. Spend time researching the counterpart's point of view on the situation.",
+                    "6. Exhaust every source of information at your disposal (including, but not limited to family, friends, co-workers, institutions, the library, and the Internet).",
+                    "7. Research alternative outcomes that satisfy the need of the parties, (i.e., find alternative arrangements that meet you and your counterpart's needs).",
+                    "8. Communicate in advance your intention to negotiate.",
+                    "9. Make sure all relevant parties will be included in the negotiation.",
+                    "10. Establish a shared perception of the situation that requires resolution.",
+                    "11. Attempt to remove or minimize distractions that could draw attention away from the negotiation.",
+                    "12. Spend time researching the events leading to the negotiation.",
+                    "13. Spend time thinking about your goals.",
+                    "14. Prioritize the goals for the negotiation.",
+                    "15. Create a table or list of what you value most to what you value least.",
+                    "16. Ensure that you have the necessary resources to follow through with the deal that you reach.",
+                    "17. Maintain competence in the skills needed to analyze the deal (e.g., technical evaluation, accounting, developing relationships, etc.).",
+                    "18. Understand your no-deal options.",
+                    "19. Understand your counterpart's no-deal options.",
+                    "20. Research the obstacles to an agreement that can result in a no-deal.",
+                    "21. Spend time thinking about what you would do if the negotiation ended in a no-deal."
+          )),
+          div(
+            class = "rating-container",
+            lapply(1:7, function(j) {
+              div(
+                id = paste0("plan", i, "_", j),
+                class = "rating-item",
+                HTML(switch(j,
+                            "1" = "1<br>Would not do<br>this at all",
+                            "2" = "2",
+                            "3" = "3",
+                            "4" = "4<br>Would do this<br>somewhat",
+                            "5" = "5",
+                            "6" = "6",
+                            "7" = "7<br>Would do this<br>a great deal"
+                )),
+                onclick = sprintf("Shiny.setInputValue('plan%d', %d, {priority: 'event'})", i, j)
+              )
+            })
+    }
+  })
+  
+  output$downloadReport <- downloadHandler(
+    filename = function() {
+      paste0("report_", gsub("[^[:alnum:]]", "_", input$name), ".pdf")
+    },
+    content = function(file) {
+      file.copy(report(), file)
+    }
+  )
+          ),
+          br()
+        )
+      }),
+      
+      h4("Reflecting on how you negotiated in the past, to what extent would you do the following behaviors during a negotiation?"),
+      h4("Each of the behaviors are things people can do during a negotiation."),
+      
+      # During negotiation survey items
+      lapply(1:26, function(i) {
+        tagList(
+          h5(switch(i,
+                    "1. Have plans in advance to deal with counterproductive (e.g., negative, extreme, irrational) behavior from your counterpart.",
+                    "2. Ask questions to learn about your counterpart.",
+                    "3. Test your understanding of what your counterpart was trying to say by repeating what they said.",
+                    "4. Try to focus on satisfying your underlying needs rather than a specific list of requirements.",
+                    "5. Spend time inventing options for mutual benefit.",
+                    "6. Keep track of how much value is created by systematically evaluating each offer against previous offers.",
+                    "7. Try to reach a deal that touches on all of the issues involved.",
+                    "8. Review the final terms with your counterpart to confirm mutual agreement about their interpretation.",
+                    "9. Make sure that you were fully understood.",
+                    "10. Try to ensure all your interests were met in the agreement.",
+                    "11. Check if your arguments are persuasive.",
+                    "12. Check if your counterpart is telling the truth.",
+                    "13. Check if the counterpart is committed to making a deal with you.",
+                    "14. Make sure the help you are getting is appropriate for the task at hand.",
+                    "15. Justify each offer with a reason.",
+                    "16. Provide reasons that the counterpart should find plausible.",
+                    "17. Present facts that support your offer.",
+                    "18. Support your offer with facts.",
+                    "19. Refuse to make concessions.",
+                    "20. Insist on getting something every time you make a concession.",
+                    "21. Ask for a lot in your offers.",
+                    "22. Avoid making concessions.",
+                    "23. Use your power to make the counterpart concede",
+                    "24. Always try to get something in return for an accommodation you make",
+                    "25. Make ambitious offers.",
+                    "26. Downplay threats made by the counterpart"
+          )),
+          div(
+            class = "rating-container",
+            lapply(1:7, function(j) {
+              div(
+                id = paste0("barg", i, "_", j),
+                class = "rating-item",
+                HTML(switch(j,
+                            "1" = "1<br>Would not do<br>this at all",
+                            "2" = "2",
+                            "3" = "3",
+                            "4" = "4<br>Would do this<br>somewhat",
+                            "5" = "5",
+                            "6" = "6",
+                            "7" = "7<br>Would do this<br>a great deal"
+                )),
+                onclick = sprintf("Shiny.setInputValue('barg%d', %d, {priority: 'event'})", i, j)
+              )
+            })
+          ),
+          br()
+        )
+      }),
+      
+      # New section for after negotiation behaviors
+      h4("Reflecting on how you negotiated in the past, to what extent would you do the following behaviors following a negotiation?"),
+      h4("Each of the behaviors are things people can do after reaching an agreement."),
+      
+      # After negotiation survey items
+      lapply(1:8, function(i) {
+        tagList(
+          h5(switch(i,
+                    "1. Express your commitment to the agreement.",
+                    "2. Check that you have addressed your counterpart's key concerns.",
+                    "3. Agree on a plan to implement every aspect of the agreement.",
+                    "4. Monitor the counterpart's actions to check that they are working to implement the agreement.",
+                    "5. Periodically seek advice about negotiating from a more experienced negotiator.",
+                    "6. Periodically seek advice about negotiating from peers.",
+                    "7. Check with your counterpart about their feelings about the negotiation.",
+                    "8. Check with your counterpart's social network (e.g., their friends, family, colleagues, etc…) about the negotiation."
+          )),
+          div(
+            class = "rating-container",
+            lapply(1:7, function(j) {
+              div(
+                id = paste0("post", i, "_", j),
+                class = "rating-item",
+                HTML(switch(j,
+                            "1" = "1<br>Would not do<br>this at all",
+                            "2" = "2",
+                            "3" = "3",
+                            "4" = "4<br>Would do this<br>somewhat",
+                            "5" = "5",
+                            "6" = "6",
+                            "7" = "7<br>Would do this<br>a great deal"
+                )),
+                onclick = sprintf("Shiny.setInputValue('post%d', %d, {priority: 'event'})", i, j)
+              )
+            })
+          ),
+          br()
+        )
+      }),
+    
+      # Need for Closure Scale
+      h4("Need for Closure Scale"),
+      h4("Please indicate the extent to which you agree or disagree with each of the following statements."),
+      
+      # Survey items for Need for Closure
+      lapply(1:15, function(i) {
+        tagList(
+          h5(switch(i,
+                    "1. I don't like situations that are uncertain.",
+                    "2. I dislike questions which could be answered in many different ways.",
+                    "3. I find that a well ordered life with regular hours suits my temperament.",
+                    "4. I feel uncomfortable when I don't understand the reason why an event occurred in my life.",
+                    "5. I feel irritated when one person disagrees with what everyone else in a group believes.",
+                    "6. I don't like to go into a situation without knowing what I can expect from it.",
+                    "7. When I have made a decision, I feel relieved.",
+                    "8. When I am confronted with a problem, I'm dying to reach a solution very quickly.",
+                    "9. I would quickly become impatient and irritated if I would not find a solution to a problem immediately.",
+                    "10. I don't like to be with people who are capable of unexpected actions.",
+                    "11. I dislike it when a person's statement could mean many different things.",
+                    "12. I find that establishing a consistent routine enables me to enjoy life more.",
+                    "13. I enjoy having a clear and structured mode of life.",
+                    "14. I do not usually consult many different opinions before forming my own view.",
+                    "15. I dislike unpredictable situations."
+          )),
+          div(
+            class = "rating-container",
+            lapply(1:6, function(j) {
+              div(
+                id = paste0("nfc", i, "_", j),
+                class = "rating-item",
+                HTML(switch(j,
+                            "1" = "1<br>Strongly<br>disagree",
+                            "2" = "2<br>Moderately<br>disagree",
+                            "3" = "3<br>Slightly<br>disagree",
+                            "4" = "4<br>Slightly<br>agree",
+                            "5" = "5<br>Moderately<br>agree",
+                            "6" = "6<br>Strongly<br>agree"
+                )),
+                onclick = sprintf("Shiny.setInputValue('nfc%d', %d, {priority: 'event'})", i, j)
+              )
+            })
+          ),
+          br()
+        )
+      }),
+      
+      # Need for Cognition Scale
+      h4("Need for Cognition Scale"),
+      h4("Please indicate the extent to which each statement is characteristic of you."),
+      
+      # Survey items for Need for Cognition
+      lapply(1:18, function(i) {
+        tagList(
+          h5(switch(i,
+                    "1. I would prefer complex to simple problems.",
+                    "2. I like to have the responsibility of handling a situation that requires a lot of thinking.",
+                    "3. Thinking is not my idea of fun.",
+                    "4. I would rather do something that requires little thought than something that is sure to challenge my thinking abilities.",
+                    "5. I try to anticipate and avoid situations where there is likely chance I will have to think in depth about something.",
+                    "6. I find satisfaction in deliberating hard and for long hours.",
+                    "7. I only think as hard as I have to.",
+                    "8. I prefer to think about small, daily projects to long-term ones.",
+                    "9. I like tasks that require little thought once I've learned them.",
+                    "10. The idea of relying on thought to make my way to the top appeals to me.",
+                    "11. I really enjoy a task that involves coming up with new solutions to problems.",
+                    "12. Learning new ways to think doesn't excite me very much.",
+                    "13. I prefer my life to be filled with puzzles that I must solve.",
+                    "14. The notion of thinking abstractly is appealing to me.",
+                    "15. I would prefer a task that is intellectual, difficult, and important to one that is somewhat important but does not require much thought.",
+                    "16. I feel relief rather than satisfaction after completing a task that required a lot of mental effort.",
+                    "17. It's enough for me that something gets the job done; I don't care how or why it works.",
+                    "18. I usually end up deliberating about issues even when they do not affect me personally."
+          )),
+          div(
+            class = "rating-container",
+            lapply(1:5, function(j) {
+              div(
+                id = paste0("ncs", i, "_", j),
+                class = "rating-item",
+                HTML(switch(j,
+                            "1" = "1<br>Extremely<br>Uncharacteristic",
+                            "2" = "2<br>Somewhat<br>Uncharacteristic",
+                            "3" = "3<br>Uncertain",
+                            "4" = "4<br>Somewhat<br>Characteristic",
+                            "5" = "5<br>Extremely<br>Characteristic"
+                )),
+                onclick = sprintf("Shiny.setInputValue('ncs%d', %d, {priority: 'event'})", i, j)
+              )
+            })
+          ),
+          br()
+        )
+      }),
+      
+      # SVO Scale
+      h4("Social Value Orientation"),
+      div(class = "svo-instructions",
+          HTML("<p>In this task you have been randomly paired with another person, whom we will refer to as the other. 
+                This other person is someone you do not know and will remain mutually anonymous. All of your choices are completely confidential.</p>
+                <p>You will be making a series of decisions about allocating resources between you and this other person. 
+                For each of the following questions, please indicate the distribution you prefer most by moving the slider to your preferred position.</p>
+                <p>Your decisions will yield money for both yourself and the other person. There are no right or wrong answers, 
+                this is all about personal preferences. Your choices will influence both the amount of money you receive as well as 
+                the amount of money the other receives.</p>")
+      ),
+      
+      # SVO Slider items
+      lapply(1:6, function(i) {
+        tagList(
+          h5(paste("SVO Item", i)),
+          
+          # Define the self/other values for each slider position
+          tags$div(class = "svo-slider-container",
+                   tags$div(class = "svo-labels",
+                            tags$div(class = "svo-label", "You Receive")
+                   ),
+                   
+                   sliderInput(
+                     inputId = paste0("svo", i),
+                     label = NULL,
+                     min = 1,
+                     max = 9,
+                     value = 5,
+                     step = 1,
+                     width = "100%",
+                     ticks = FALSE
+                   ),
+                   
+                   tags$div(class = "svo-labels",
+                            tags$div(class = "svo-label", "Other Receives")
+                   ),
+                   
+                   # This div will be updated by JavaScript to show the current values
+                   tags$div(id = paste0("svo_values_", i), class = "svo-values")
+                  ),
+                  
+                  # Hidden inputs to store the actual values for self and other
+                  tags$div(style = "display: none;",
+                           textInput(paste0("svo", i, "_self_value"), NULL, ""),
+                           textInput(paste0("svo", i, "_other_value"), NULL, "")
+                  ),
+                  
+                  br()
+          )
+        }),
+      
+      # Add JavaScript to update the SVO values when sliders change
+      tags$script(HTML("
+        // Define SVO values for each item at each position
+        const svoValues = {
+          1: {
+            self: [85, 85, 85, 85, 85, 85, 85, 85, 85],
+            other: [85, 76, 68, 59, 50, 41, 33, 24, 15]
+          },
+          2: {
+            self: [85, 87, 89, 91, 93, 94, 96, 98, 100],
+            other: [15, 19, 24, 28, 33, 37, 41, 46, 50]
+          },
+          3: {
+            self: [50, 54, 59, 63, 68, 72, 76, 81, 85],
+            other: [100, 98, 96, 94, 93, 91, 89, 87, 85]
+          },
+          4: {
+            self: [50, 54, 59, 63, 68, 72, 76, 81, 85],
+            other: [100, 89, 79, 68, 58, 47, 36, 26, 15]
+          },
+          5: {
+            self: [100, 94, 88, 81, 75, 69, 63, 56, 50],
+            other: [50, 56, 63, 69, 75, 81, 88, 94, 100]
+          },
+          6: {
+            self: [100, 98, 96, 94, 93, 91, 89, 87, 85],
+            other: [50, 54, 59, 63, 68, 72, 76, 81, 85]
+          }
+        };
+        
+        // Function to update the displayed values and hidden inputs
+        function updateSVOValues(item, value) {
+          const index = value - 1; // Convert to 0-based index
+          const selfValue = svoValues[item].self[index];
+          const otherValue = svoValues[item].other[index];
+          
+          // Update the values display
+          const valuesContainer = document.getElementById('svo_values_' + item);
+          valuesContainer.innerHTML = '';
+          
+          // Create 9 value columns
+          for (let i = 0; i < 9; i++) {
+            const valueDiv = document.createElement('div');
+            valueDiv.className = 'svo-value';
+            
+            // Add self value
+            const selfDiv = document.createElement('div');
+            selfDiv.className = 'svo-value-self';
+            selfDiv.textContent = svoValues[item].self[i];
+            if (i === index) selfDiv.style.fontWeight = 'bold';
+            
+            // Add divider
+            const divider = document.createElement('div');
+            divider.className = 'svo-divider';
+            if (i === index) divider.style.backgroundColor = '#007bff';
+            
+            // Add other value
+            const otherDiv = document.createElement('div');
+            otherDiv.className = 'svo-value-other';
+            otherDiv.textContent = svoValues[item].other[i];
+            if (i === index) otherDiv.style.fontWeight = 'bold';
+            
+            valueDiv.appendChild(selfDiv);
+            valueDiv.appendChild(divider);
+            valueDiv.appendChild(otherDiv);
+            
+            valuesContainer.appendChild(valueDiv);
+          }
+          
+          // Update hidden inputs with the selected values
+          document.getElementById('svo' + item + '_self_value').value = selfValue;
+          document.getElementById('svo' + item + '_other_value').value = otherValue;
+        }
+        
+        // Initialize all sliders
+        $(document).ready(function() {
+          for (let i = 1; i <= 6; i++) {
+            // Initialize with default value
+            updateSVOValues(i, 5);
+            
+            // Add change listener
+            $('#svo' + i).on('change', function(e) {
+              updateSVOValues(i, parseInt(e.target.value));
+            });
+          }
+        });
+      ")),
+      
+      # Add the submit button and download section
+      tags$p("Click the 'Submit' button below. It will save your responses and after a few seconds, you will get a download link to your individualized feedback report below."),
+      
+      div(class = "button-container",
+          actionButton("submit", "Submit"),
+          uiOutput("downloadButton")
+      ),
+      
+      
+      tags$div(id = "loading", style = "display: none;",
+               tags$p("Processing your responses and generating report. Please wait...")
+      )
+    )
+  )
+)
+
+# Server logic
+server <- function(input, output, session) {
+  
+  is_valid_email <- function(x) {
+    grepl("^[[:alnum:]._%-]+@[[:alnum:].-]+\\.[[:alpha:]]{2,}$", x)
+  }
+  
+  # Reactive value to store the generated report
+  report <- reactiveVal(NULL)
+  
+  # Add this observer to handle the styling of selected items for all question sets
+  observe({
+    # For 'item' questions
+    lapply(1:21, function(i) {
+      selected_value <- input[[paste0("plan", i)]]
+      lapply(1:7, function(j) {
+        if (!is.null(selected_value) && selected_value == j) {
+          shinyjs::addClass(id = paste0("plan", i, "_", j), class = "selected")
+        } else {
+          shinyjs::removeClass(id = paste0("plan", i, "_", j), class = "selected")
+        }
+      })
+    })
     
     # For 'barg' questions
     lapply(1:26, function(i) {
@@ -1134,4 +1134,3 @@ shinyApp(ui = ui, server = server))
         shinyjs::removeClass("submit", "disabled-button")
         shinyjs::alert(paste("An error occurred:", e$message))
       })
-    }
