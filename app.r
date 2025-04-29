@@ -230,7 +230,7 @@ ui <- fluidPage(
       numericInput("age", "Age:", value = 18, min = 1, max = 120),
       selectInput("gender", "Gender:", 
                   choices = c(" ", "Male", "Female", "Other"))
-      ),
+    ),
     
     mainPanel(
       h4("Reflecting on how you negotiated in the past, to what extent would you do the following behaviors before a negotiation?"),
@@ -628,7 +628,7 @@ ui <- fluidPage(
     
     tags$div(id = "loading", style = "display: none;",
              tags$p("Processing your responses and generating report. Please wait...")
-    ),
+    )
    )
   )
 )
@@ -654,328 +654,6 @@ server <- function(input, output, session) {
         } else {
           shinyjs::removeClass(id = paste0("plan", i, "_", j), class = "selected")
         }
-      })
-    })
-    
-    # For 'barg' questions
-    lapply(1:26, function(i) {
-      selected_value <- input[[paste0("barg", i)]]
-      lapply(1:7, function(j) {
-        if (!is.null(selected_value) && selected_value == j) {
-          shinyjs::addClass(id = paste0("barg", i, "_", j), class = "selected")
-        } else {
-          shinyjs::removeClass(id = paste0("barg", i, "_", j), class = "selected")
-        }
-      })
-    })
-    
-    # For 'post' questions
-    lapply(1:8, function(i) {
-      selected_value <- input[[paste0("post", i)]]
-      lapply(1:7, function(j) {
-        if (!is.null(selected_value) && selected_value == j) {
-          shinyjs::addClass(id = paste0("post", i, "_", j), class = "selected")
-        } else {
-          shinyjs::removeClass(id = paste0("post", i, "_", j), class = "selected")
-        }
-      })
-    })
-    
-    # For 'nfc' questions (Need for Closure)
-    lapply(1:15, function(i) {
-      selected_value <- input[[paste0("nfc", i)]]
-      lapply(1:6, function(j) {
-        if (!is.null(selected_value) && selected_value == j) {
-          shinyjs::addClass(id = paste0("nfc", i, "_", j), class = "selected")
-        } else {
-          shinyjs::removeClass(id = paste0("nfc", i, "_", j), class = "selected")
-        }
-      })
-    })
-    
-    # For 'ncs' questions (Need for Cognition Scale)
-    lapply(1:18, function(i) {
-      selected_value <- input[[paste0("ncs", i)]]
-      lapply(1:5, function(j) {
-        if (!is.null(selected_value) && selected_value == j) {
-          shinyjs::addClass(id = paste0("ncs", i, "_", j), class = "selected")
-        } else {
-          shinyjs::removeClass(id = paste0("ncs", i, "_", j), class = "selected")
-        }
-      })
-    })
-  })
-  
-  observeEvent(input$submit, {
-    # Disable the submit button and update its text
-    shinyjs::disable("submit")
-    shinyjs::html("submit", "Generating your report, please wait...")
-    shinyjs::addClass("submit", "disabled-button")
-    
-    # Check if name and email are filled
-    name_filled <- nzchar(input$name)
-    email_filled <- nzchar(input$email)
-    
-    if (!name_filled) {
-      shinyjs::html("name_error", "Please enter your name.")
-    } else {
-      shinyjs::html("name_error", "")
-    }
-    
-    if (!email_filled || !is_valid_email(input$email)) {
-      shinyjs::html("email_error", "Please enter a valid email address.")
-    } else {
-      shinyjs::html("email_error", "")
-    }
-    
-    # Check if all questions are answered
-    unanswered <- c(
-      sapply(1:21, function(i) is.null(input[[paste0("plan", i)]])),
-      sapply(1:26, function(i) is.null(input[[paste0("barg", i)]])),
-      sapply(1:8, function(i) is.null(input[[paste0("post", i)]])),
-      sapply(1:15, function(i) is.null(input[[paste0("nfc", i)]])),  # NFC questions
-      sapply(1:18, function(i) is.null(input[[paste0("ncs", i)]]))   # NCS questions
-      # SVO questions are handled by sliders with defaults, so they're always answered
-    )
-    
-    if (any(unanswered) || !name_filled || !email_filled) {
-      # If any question is unanswered or name/email is missing, show an alert
-      shinyjs::alert("Please complete all required fields and answer all questions before submitting.")
-      shinyjs::enable("submit")
-      shinyjs::html("submit", "Submit")
-      shinyjs::removeClass("submit", "disabled-button")
-    } else {
-      # All questions are answered and name/email are filled, proceed with submission
-      
-      # Get SVO values from hidden inputs
-      svo_self_values <- c(
-        as.numeric(input$svo1_self_value),
-        as.numeric(input$svo2_self_value),
-        as.numeric(input$svo3_self_value),
-        as.numeric(input$svo4_self_value),
-        as.numeric(input$svo5_self_value),
-        as.numeric(input$svo6_self_value)
-      )
-      
-      svo_other_values <- c(
-        as.numeric(input$svo1_other_value),
-        as.numeric(input$svo2_other_value),
-        as.numeric(input$svo3_other_value),
-        as.numeric(input$svo4_other_value),
-        as.numeric(input$svo5_other_value),
-        as.numeric(input$svo6_other_value)
-      )
-      
-      # Create response data frame
-      # Calculate SVO values - store the slider position values for consistency
-      user_responses <- data.frame(
-        Timestamp = Sys.time(),
-        Name = input$name,
-        Email = input$email,
-        Age = input$age,
-        Gender = input$gender,
-        Plan1 = as.numeric(input$plan1),
-        Plan2 = as.numeric(input$plan2),
-        Plan3 = as.numeric(input$plan3),
-        Plan4 = as.numeric(input$plan4),
-        Plan5 = as.numeric(input$plan5),
-        Plan6 = as.numeric(input$plan6),
-        Plan7 = as.numeric(input$plan7),
-        Plan8 = as.numeric(input$plan8),
-        Plan9 = as.numeric(input$plan9),
-        Plan10 = as.numeric(input$plan10),
-        Plan11 = as.numeric(input$plan11),
-        Plan12 = as.numeric(input$plan12),
-        Plan13 = as.numeric(input$plan13),
-        Plan14 = as.numeric(input$plan14),
-        Plan15 = as.numeric(input$plan15),
-        Plan16 = as.numeric(input$plan16),
-        Plan17 = as.numeric(input$plan17),
-        Plan18 = as.numeric(input$plan18),
-        Plan19 = as.numeric(input$plan19),
-        Plan20 = as.numeric(input$plan20),
-        Plan21 = as.numeric(input$plan21),
-        Barg1 = as.numeric(input$barg1),
-        Barg2 = as.numeric(input$barg2),
-        Barg3 = as.numeric(input$barg3),
-        Barg4 = as.numeric(input$barg4),
-        Barg5 = as.numeric(input$barg5),
-        Barg6 = as.numeric(input$barg6),
-        Barg7 = as.numeric(input$barg7),
-        Barg8 = as.numeric(input$barg8),
-        Barg9 = as.numeric(input$barg9),
-        Barg10 = as.numeric(input$barg10),
-        Barg11 = as.numeric(input$barg11),
-        Barg12 = as.numeric(input$barg12),
-        Barg13 = as.numeric(input$barg13),
-        Barg14 = as.numeric(input$barg14),
-        Barg15 = as.numeric(input$barg15),
-        Barg16 = as.numeric(input$barg16),
-        Barg17 = as.numeric(input$barg17),
-        Barg18 = as.numeric(input$barg18),
-        Barg19 = as.numeric(input$barg19),
-        Barg20 = as.numeric(input$barg20),
-        Barg21 = as.numeric(input$barg21),
-        Barg22 = as.numeric(input$barg22),
-        Barg23 = as.numeric(input$barg23),
-        Barg24 = as.numeric(input$barg24),
-        Barg25 = as.numeric(input$barg25),
-        Barg26 = as.numeric(input$barg26),
-        Post1 = as.numeric(input$post1),
-        Post2 = as.numeric(input$post2),
-        Post3 = as.numeric(input$post3),
-        Post4 = as.numeric(input$post4),
-        Post5 = as.numeric(input$post5),
-        Post6 = as.numeric(input$post6),
-        Post7 = as.numeric(input$post7),
-        Post8 = as.numeric(input$post8),
-        # Add Need for Closure fields
-        NFC1 = as.numeric(input$nfc1),
-        NFC2 = as.numeric(input$nfc2),
-        NFC3 = as.numeric(input$nfc3),
-        NFC4 = as.numeric(input$nfc4),
-        NFC5 = as.numeric(input$nfc5),
-        NFC6 = as.numeric(input$nfc6),
-        NFC7 = as.numeric(input$nfc7),
-        NFC8 = as.numeric(input$nfc8),
-        NFC9 = as.numeric(input$nfc9),
-        NFC10 = as.numeric(input$nfc10),
-        NFC11 = as.numeric(input$nfc11),
-        NFC12 = as.numeric(input$nfc12),
-        NFC13 = as.numeric(input$nfc13),
-        NFC14 = as.numeric(input$nfc14),
-        NFC15 = as.numeric(input$nfc15),
-        # Add Need for Cognition fields
-        NCS1 = as.numeric(input$ncs1),
-        NCS2 = as.numeric(input$ncs2),
-        NCS3 = as.numeric(input$ncs3),
-        NCS4 = as.numeric(input$ncs4),
-        NCS5 = as.numeric(input$ncs5),
-        NCS6 = as.numeric(input$ncs6),
-        NCS7 = as.numeric(input$ncs7),
-        NCS8 = as.numeric(input$ncs8),
-        NCS9 = as.numeric(input$ncs9),
-        NCS10 = as.numeric(input$ncs10),
-        NCS11 = as.numeric(input$ncs11),
-        NCS12 = as.numeric(input$ncs12),
-        NCS13 = as.numeric(input$ncs13),
-        NCS14 = as.numeric(input$ncs14),
-        NCS15 = as.numeric(input$ncs15),
-        NCS16 = as.numeric(input$ncs16),
-        NCS17 = as.numeric(input$ncs17),
-        NCS18 = as.numeric(input$ncs18),
-        # Add SVO values
-        SVO1 = as.numeric(input$svo1),
-        SVO2 = as.numeric(input$svo2),
-        SVO3 = as.numeric(input$svo3),
-        SVO4 = as.numeric(input$svo4),
-        SVO5 = as.numeric(input$svo5),
-        SVO6 = as.numeric(input$svo6),
-        # Store the actual self/other values as well
-        SVO1_Self = svo_self_values[1],
-        SVO1_Other = svo_other_values[1],
-        SVO2_Self = svo_self_values[2],
-        SVO2_Other = svo_other_values[2],
-        SVO3_Self = svo_self_values[3],
-        SVO3_Other = svo_other_values[3],
-        SVO4_Self = svo_self_values[4],
-        SVO4_Other = svo_other_values[4],
-        SVO5_Self = svo_self_values[5],
-        SVO5_Other = svo_other_values[5],
-        SVO6_Self = svo_self_values[6],
-        SVO6_Other = svo_other_values[6]
-      )
-      
-      # This part should be added after the user_responses data frame creation:
-
-      user_responses <- user_responses %>%
-        mutate(
-          pre_count = rowMeans(select(., Plan1:Plan5), na.rm = TRUE),
-          pre_arena = rowMeans(select(., Plan6:Plan12), na.rm = TRUE),
-          pre_preps = rowMeans(select(., Plan13:Plan17), na.rm = TRUE),
-          pre_imp = rowMeans(select(., Plan18:Plan19), na.rm = TRUE),
-          pre = rowMeans(select(., Plan1:Plan19), na.rm = TRUE),
-          barg_mut = rowMeans(select(., Barg1:Barg6), na.rm = TRUE),
-          barg_com = rowMeans(select(., Barg7:Barg9), na.rm = TRUE),
-          barg_arg = rowMeans(select(., Barg13, Barg12, Barg15, Barg18, Barg11, Barg17, Barg16, Barg14), na.rm = TRUE),
-          barg_get = rowMeans(select(., Barg25, Barg21, Barg22, Barg19, Barg26, Barg23, Barg20, Barg24), na.rm = TRUE),
-          barg = rowMeans(select(., Barg1:Barg9, Barg13, Barg12, Barg15, Barg18, Barg11, Barg17, Barg16, Barg14, Barg25, Barg21, Barg22, Barg19, Barg26, Barg23, Barg20, Barg24), na.rm = TRUE),
-          imp_imp = rowMeans(select(., Post1:Post3), na.rm = TRUE),
-          imp_feedb = rowMeans(select(., Post5, Post6), na.rm = TRUE),
-          imp = rowMeans(select(., Post1:Post3, Post5, Post6), na.rm = TRUE),
-          nfc_order = rowMeans(select(., NFC3, NFC12, NFC13), na.rm = TRUE),
-          nfc_predictability = rowMeans(select(., NFC6, NFC10, NFC15), na.rm = TRUE),
-          nfc_decisiveness = rowMeans(select(., NFC7, NFC8, NFC9), na.rm = TRUE),
-          nfc_ambiguity = rowMeans(select(., NFC1, NFC2, NFC4, NFC11), na.rm = TRUE),
-          nfc_closemindedness = rowMeans(select(., NFC5, NFC14), na.rm = TRUE),
-          nfc_total = rowMeans(select(., NFC1:NFC15), na.rm = TRUE),
-          # Reverse score the NCS negative items (3, 4, 5, 7, 8, 9, 12, 16, 17)
-          NCS3_rev = 6 - NCS3,
-          NCS4_rev = 6 - NCS4,
-          NCS5_rev = 6 - NCS5,
-          NCS7_rev = 6 - NCS7,
-          NCS8_rev = 6 - NCS8,
-          NCS9_rev = 6 - NCS9,
-          NCS12_rev = 6 - NCS12,
-          NCS16_rev = 6 - NCS16,
-          NCS17_rev = 6 - NCS17,
-          # Need for Cognition summary score (using reversed items where appropriate)
-          ncs_total = rowMeans(select(., NCS1, NCS2, NCS3_rev, NCS4_rev, NCS5_rev, NCS6, 
-                               NCS7_rev, NCS8_rev, NCS9_rev, NCS10, NCS11, NCS12_rev, 
-                               NCS13, NCS14, NCS15, NCS16_rev, NCS17_rev, NCS18), na.rm = TRUE),
-          
-          # SVO calculations based on the scoring syntax
-          # Calculate mean values for self and other across the first six items
-          SVO_mean_first_six_Items_Self = rowMeans(select(., SVO1_Self, SVO2_Self, SVO3_Self, 
-                                                 SVO4_Self, SVO5_Self, SVO6_Self), na.rm = TRUE),
-          SVO_mean_first_six_Items_Other = rowMeans(select(., SVO1_Other, SVO2_Other, SVO3_Other, 
-                                                   SVO4_Other, SVO5_Other, SVO6_Other), na.rm = TRUE),
-          
-          # Calculate SVO angle according to the formula
-          SVO_angle = (atan((SVO_mean_first_six_Items_Other - 50) / 
-                           (SVO_mean_first_six_Items_Self - 50)) * 180) / pi,
-          
-          # Categorize the SVO angle into types
-          SVO_type = case_when(
-            SVO_angle <= -12.04 ~ 1, # competitive
-            SVO_angle > -12.04 & SVO_angle <= 22.45 ~ 2, # individualistic
-            SVO_angle > 22.45 & SVO_angle <= 57.15 ~ 3, # prosocial
-            SVO_angle > 57.15 ~ 4, # altruistic
-            TRUE ~ NA_real_
-          )
-        )
-      
-      # Print the data frame for debugging
-      # print(user_responses)
-      
-      shinyjs::show("loading")
-      
-      tryCatch({
-        # Send to Google Sheets 
-        sheet_id <- "19cbvKPdMlg7vr9XBNZsVdkbsrQl0nETpatpcJW2_9nU"
-        sheet_append(sheet_id, user_responses)
-        
-        # Generate report
-        report(generate_report(user_responses))
-        
-        shinyjs::hide("loading")
-        
-        # Enable the download button
-        output$downloadButton <- renderUI({
-          downloadButton("downloadReport", "Download Your Report")
-        })
-        
-        # Update the submit button text
-        shinyjs::html("submit", "Report Generated")
-        
-      }, error = function(e) {
-        output$thankYou <- renderText({
-          paste("An error occurred:", e$message)
-        })
-        shinyjs::enable("submit")
-        shinyjs::html("submit", "Submit")
-        shinyjs::removeClass("submit", "disabled-button")
-        shinyjs::alert(paste("An error occurred:", e$message))
       })
     }
   })
@@ -1135,4 +813,325 @@ generate_report <- function(user_responses) {
 }
 
 # Run the application 
-shinyApp(ui = ui, server = server)
+shinyApp(ui = ui, server = server))
+    
+    # For 'barg' questions
+    lapply(1:26, function(i) {
+      selected_value <- input[[paste0("barg", i)]]
+      lapply(1:7, function(j) {
+        if (!is.null(selected_value) && selected_value == j) {
+          shinyjs::addClass(id = paste0("barg", i, "_", j), class = "selected")
+        } else {
+          shinyjs::removeClass(id = paste0("barg", i, "_", j), class = "selected")
+        }
+      })
+    })
+    
+    # For 'post' questions
+    lapply(1:8, function(i) {
+      selected_value <- input[[paste0("post", i)]]
+      lapply(1:7, function(j) {
+        if (!is.null(selected_value) && selected_value == j) {
+          shinyjs::addClass(id = paste0("post", i, "_", j), class = "selected")
+        } else {
+          shinyjs::removeClass(id = paste0("post", i, "_", j), class = "selected")
+        }
+      })
+    })
+    
+    # For 'nfc' questions (Need for Closure)
+    lapply(1:15, function(i) {
+      selected_value <- input[[paste0("nfc", i)]]
+      lapply(1:6, function(j) {
+        if (!is.null(selected_value) && selected_value == j) {
+          shinyjs::addClass(id = paste0("nfc", i, "_", j), class = "selected")
+        } else {
+          shinyjs::removeClass(id = paste0("nfc", i, "_", j), class = "selected")
+        }
+      })
+    })
+    
+    # For 'ncs' questions (Need for Cognition Scale)
+    lapply(1:18, function(i) {
+      selected_value <- input[[paste0("ncs", i)]]
+      lapply(1:5, function(j) {
+        if (!is.null(selected_value) && selected_value == j) {
+          shinyjs::addClass(id = paste0("ncs", i, "_", j), class = "selected")
+        } else {
+          shinyjs::removeClass(id = paste0("ncs", i, "_", j), class = "selected")
+        }
+      })
+    })
+  })
+  
+  observeEvent(input$submit, {
+    # Disable the submit button and update its text
+    shinyjs::disable("submit")
+    shinyjs::html("submit", "Generating your report, please wait...")
+    shinyjs::addClass("submit", "disabled-button")
+    
+    # Check if name and email are filled
+    name_filled <- nzchar(input$name)
+    email_filled <- nzchar(input$email)
+    
+    if (!name_filled) {
+      shinyjs::html("name_error", "Please enter your name.")
+    } else {
+      shinyjs::html("name_error", "")
+    }
+    
+    if (!email_filled || !is_valid_email(input$email)) {
+      shinyjs::html("email_error", "Please enter a valid email address.")
+    } else {
+      shinyjs::html("email_error", "")
+    }
+    
+    # Check if all questions are answered
+    unanswered <- c(
+      sapply(1:21, function(i) { is.null(input[[paste0("plan", i)]]) }),
+      sapply(1:26, function(i) { is.null(input[[paste0("barg", i)]]) }),
+      sapply(1:8, function(i) { is.null(input[[paste0("post", i)]]) }),
+      sapply(1:15, function(i) { is.null(input[[paste0("nfc", i)]]) }),  # NFC questions
+      sapply(1:18, function(i) { is.null(input[[paste0("ncs", i)]]) })   # NCS questions
+      # SVO questions are handled by sliders with defaults, so they're always answered
+    )
+    
+    if (any(unanswered) || !name_filled || !email_filled) {
+      # If any question is unanswered or name/email is missing, show an alert
+      shinyjs::alert("Please complete all required fields and answer all questions before submitting.")
+      shinyjs::enable("submit")
+      shinyjs::html("submit", "Submit")
+      shinyjs::removeClass("submit", "disabled-button")
+    } else {
+      # All questions are answered and name/email are filled, proceed with submission
+      
+      # Get SVO values from hidden inputs
+      svo_self_values <- c(
+        as.numeric(input$svo1_self_value),
+        as.numeric(input$svo2_self_value),
+        as.numeric(input$svo3_self_value),
+        as.numeric(input$svo4_self_value),
+        as.numeric(input$svo5_self_value),
+        as.numeric(input$svo6_self_value)
+      )
+      
+      svo_other_values <- c(
+        as.numeric(input$svo1_other_value),
+        as.numeric(input$svo2_other_value),
+        as.numeric(input$svo3_other_value),
+        as.numeric(input$svo4_other_value),
+        as.numeric(input$svo5_other_value),
+        as.numeric(input$svo6_other_value)
+      )
+      
+      # Create response data frame
+      # Calculate SVO values - store the slider position values for consistency
+      user_responses <- data.frame(
+        Timestamp = Sys.time(),
+        Name = input$name,
+        Email = input$email,
+        Age = input$age,
+        Gender = input$gender,
+        Plan1 = as.numeric(input$plan1),
+        Plan2 = as.numeric(input$plan2),
+        Plan3 = as.numeric(input$plan3),
+        Plan4 = as.numeric(input$plan4),
+        Plan5 = as.numeric(input$plan5),
+        Plan6 = as.numeric(input$plan6),
+        Plan7 = as.numeric(input$plan7),
+        Plan8 = as.numeric(input$plan8),
+        Plan9 = as.numeric(input$plan9),
+        Plan10 = as.numeric(input$plan10),
+        Plan11 = as.numeric(input$plan11),
+        Plan12 = as.numeric(input$plan12),
+        Plan13 = as.numeric(input$plan13),
+        Plan14 = as.numeric(input$plan14),
+        Plan15 = as.numeric(input$plan15),
+        Plan16 = as.numeric(input$plan16),
+        Plan17 = as.numeric(input$plan17),
+        Plan18 = as.numeric(input$plan18),
+        Plan19 = as.numeric(input$plan19),
+        Plan20 = as.numeric(input$plan20),
+        Plan21 = as.numeric(input$plan21),
+        Barg1 = as.numeric(input$barg1),
+        Barg2 = as.numeric(input$barg2),
+        Barg3 = as.numeric(input$barg3),
+        Barg4 = as.numeric(input$barg4),
+        Barg5 = as.numeric(input$barg5),
+        Barg6 = as.numeric(input$barg6),
+        Barg7 = as.numeric(input$barg7),
+        Barg8 = as.numeric(input$barg8),
+        Barg9 = as.numeric(input$barg9),
+        Barg10 = as.numeric(input$barg10),
+        Barg11 = as.numeric(input$barg11),
+        Barg12 = as.numeric(input$barg12),
+        Barg13 = as.numeric(input$barg13),
+        Barg14 = as.numeric(input$barg14),
+        Barg15 = as.numeric(input$barg15),
+        Barg16 = as.numeric(input$barg16),
+        Barg17 = as.numeric(input$barg17),
+        Barg18 = as.numeric(input$barg18),
+        Barg19 = as.numeric(input$barg19),
+        Barg20 = as.numeric(input$barg20),
+        Barg21 = as.numeric(input$barg21),
+        Barg22 = as.numeric(input$barg22),
+        Barg23 = as.numeric(input$barg23),
+        Barg24 = as.numeric(input$barg24),
+        Barg25 = as.numeric(input$barg25),
+        Barg26 = as.numeric(input$barg26),
+        Post1 = as.numeric(input$post1),
+        Post2 = as.numeric(input$post2),
+        Post3 = as.numeric(input$post3),
+        Post4 = as.numeric(input$post4),
+        Post5 = as.numeric(input$post5),
+        Post6 = as.numeric(input$post6),
+        Post7 = as.numeric(input$post7),
+        Post8 = as.numeric(input$post8),
+        # Add Need for Closure fields
+        NFC1 = as.numeric(input$nfc1),
+        NFC2 = as.numeric(input$nfc2),
+        NFC3 = as.numeric(input$nfc3),
+        NFC4 = as.numeric(input$nfc4),
+        NFC5 = as.numeric(input$nfc5),
+        NFC6 = as.numeric(input$nfc6),
+        NFC7 = as.numeric(input$nfc7),
+        NFC8 = as.numeric(input$nfc8),
+        NFC9 = as.numeric(input$nfc9),
+        NFC10 = as.numeric(input$nfc10),
+        NFC11 = as.numeric(input$nfc11),
+        NFC12 = as.numeric(input$nfc12),
+        NFC13 = as.numeric(input$nfc13),
+        NFC14 = as.numeric(input$nfc14),
+        NFC15 = as.numeric(input$nfc15),
+        # Add Need for Cognition fields
+        NCS1 = as.numeric(input$ncs1),
+        NCS2 = as.numeric(input$ncs2),
+        NCS3 = as.numeric(input$ncs3),
+        NCS4 = as.numeric(input$ncs4),
+        NCS5 = as.numeric(input$ncs5),
+        NCS6 = as.numeric(input$ncs6),
+        NCS7 = as.numeric(input$ncs7),
+        NCS8 = as.numeric(input$ncs8),
+        NCS9 = as.numeric(input$ncs9),
+        NCS10 = as.numeric(input$ncs10),
+        NCS11 = as.numeric(input$ncs11),
+        NCS12 = as.numeric(input$ncs12),
+        NCS13 = as.numeric(input$ncs13),
+        NCS14 = as.numeric(input$ncs14),
+        NCS15 = as.numeric(input$ncs15),
+        NCS16 = as.numeric(input$ncs16),
+        NCS17 = as.numeric(input$ncs17),
+        NCS18 = as.numeric(input$ncs18),
+        # Add SVO values
+        SVO1 = as.numeric(input$svo1),
+        SVO2 = as.numeric(input$svo2),
+        SVO3 = as.numeric(input$svo3),
+        SVO4 = as.numeric(input$svo4),
+        SVO5 = as.numeric(input$svo5),
+        SVO6 = as.numeric(input$svo6),
+        # Store the actual self/other values as well
+        SVO1_Self = svo_self_values[1],
+        SVO1_Other = svo_other_values[1],
+        SVO2_Self = svo_self_values[2],
+        SVO2_Other = svo_other_values[2],
+        SVO3_Self = svo_self_values[3],
+        SVO3_Other = svo_other_values[3],
+        SVO4_Self = svo_self_values[4],
+        SVO4_Other = svo_other_values[4],
+        SVO5_Self = svo_self_values[5],
+        SVO5_Other = svo_other_values[5],
+        SVO6_Self = svo_self_values[6],
+        SVO6_Other = svo_other_values[6]
+      )
+      
+      # This part should be added after the user_responses data frame creation:
+      user_responses <- user_responses %>%
+        mutate(
+          pre_count = rowMeans(select(., Plan1:Plan5), na.rm = TRUE),
+          pre_arena = rowMeans(select(., Plan6:Plan12), na.rm = TRUE),
+          pre_preps = rowMeans(select(., Plan13:Plan17), na.rm = TRUE),
+          pre_imp = rowMeans(select(., Plan18:Plan19), na.rm = TRUE),
+          pre = rowMeans(select(., Plan1:Plan19), na.rm = TRUE),
+          barg_mut = rowMeans(select(., Barg1:Barg6), na.rm = TRUE),
+          barg_com = rowMeans(select(., Barg7:Barg9), na.rm = TRUE),
+          barg_arg = rowMeans(select(., Barg13, Barg12, Barg15, Barg18, Barg11, Barg17, Barg16, Barg14), na.rm = TRUE),
+          barg_get = rowMeans(select(., Barg25, Barg21, Barg22, Barg19, Barg26, Barg23, Barg20, Barg24), na.rm = TRUE),
+          barg = rowMeans(select(., Barg1:Barg9, Barg13, Barg12, Barg15, Barg18, Barg11, Barg17, Barg16, Barg14, Barg25, Barg21, Barg22, Barg19, Barg26, Barg23, Barg20, Barg24), na.rm = TRUE),
+          imp_imp = rowMeans(select(., Post1:Post3), na.rm = TRUE),
+          imp_feedb = rowMeans(select(., Post5, Post6), na.rm = TRUE),
+          imp = rowMeans(select(., Post1:Post3, Post5, Post6), na.rm = TRUE),
+          nfc_order = rowMeans(select(., NFC3, NFC12, NFC13), na.rm = TRUE),
+          nfc_predictability = rowMeans(select(., NFC6, NFC10, NFC15), na.rm = TRUE),
+          nfc_decisiveness = rowMeans(select(., NFC7, NFC8, NFC9), na.rm = TRUE),
+          nfc_ambiguity = rowMeans(select(., NFC1, NFC2, NFC4, NFC11), na.rm = TRUE),
+          nfc_closemindedness = rowMeans(select(., NFC5, NFC14), na.rm = TRUE),
+          nfc_total = rowMeans(select(., NFC1:NFC15), na.rm = TRUE),
+          # Reverse score the NCS negative items (3, 4, 5, 7, 8, 9, 12, 16, 17)
+          NCS3_rev = 6 - NCS3,
+          NCS4_rev = 6 - NCS4,
+          NCS5_rev = 6 - NCS5,
+          NCS7_rev = 6 - NCS7,
+          NCS8_rev = 6 - NCS8,
+          NCS9_rev = 6 - NCS9,
+          NCS12_rev = 6 - NCS12,
+          NCS16_rev = 6 - NCS16,
+          NCS17_rev = 6 - NCS17,
+          # Need for Cognition summary score (using reversed items where appropriate)
+          ncs_total = rowMeans(select(., NCS1, NCS2, NCS3_rev, NCS4_rev, NCS5_rev, NCS6, 
+                               NCS7_rev, NCS8_rev, NCS9_rev, NCS10, NCS11, NCS12_rev, 
+                               NCS13, NCS14, NCS15, NCS16_rev, NCS17_rev, NCS18), na.rm = TRUE),
+          
+          # SVO calculations based on the scoring syntax
+          # Calculate mean values for self and other across the first six items
+          SVO_mean_first_six_Items_Self = rowMeans(select(., SVO1_Self, SVO2_Self, SVO3_Self, 
+                                                 SVO4_Self, SVO5_Self, SVO6_Self), na.rm = TRUE),
+          SVO_mean_first_six_Items_Other = rowMeans(select(., SVO1_Other, SVO2_Other, SVO3_Other, 
+                                                   SVO4_Other, SVO5_Other, SVO6_Other), na.rm = TRUE),
+          
+          # Calculate SVO angle according to the formula
+          SVO_angle = (atan((SVO_mean_first_six_Items_Other - 50) / 
+                           (SVO_mean_first_six_Items_Self - 50)) * 180) / pi,
+          
+          # Categorize the SVO angle into types
+          SVO_type = case_when(
+            SVO_angle <= -12.04 ~ 1, # competitive
+            SVO_angle > -12.04 & SVO_angle <= 22.45 ~ 2, # individualistic
+            SVO_angle > 22.45 & SVO_angle <= 57.15 ~ 3, # prosocial
+            SVO_angle > 57.15 ~ 4, # altruistic
+            TRUE ~ NA_real_
+          )
+        )
+      
+      # Print the data frame for debugging
+      # print(user_responses)
+      
+      shinyjs::show("loading")
+      
+      tryCatch({
+        # Send to Google Sheets 
+        sheet_id <- "19cbvKPdMlg7vr9XBNZsVdkbsrQl0nETpatpcJW2_9nU"
+        sheet_append(sheet_id, user_responses)
+        
+        # Generate report
+        report(generate_report(user_responses))
+        
+        shinyjs::hide("loading")
+        
+        # Enable the download button
+        output$downloadButton <- renderUI({
+          downloadButton("downloadReport", "Download Your Report")
+        })
+        
+        # Update the submit button text
+        shinyjs::html("submit", "Report Generated")
+        
+      }, error = function(e) {
+        output$thankYou <- renderText({
+          paste("An error occurred:", e$message)
+        })
+        shinyjs::enable("submit")
+        shinyjs::html("submit", "Submit")
+        shinyjs::removeClass("submit", "disabled-button")
+        shinyjs::alert(paste("An error occurred:", e$message))
+      })
+    }
