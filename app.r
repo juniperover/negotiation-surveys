@@ -143,6 +143,7 @@ ui <- fluidPage(
       cursor: not-allowed;
     }
     /* SVO slider styles */
+ 
     .svo-container {
       margin: 30px 0;
       position: relative;
@@ -155,37 +156,25 @@ ui <- fluidPage(
     }
     .svo-labels {
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       width: 100%;
-      margin-bottom: 10px;
+      margin: 10px 0;
       font-weight: bold;
       font-size: 16px;
     }
+    .svo-top-label {
+      margin-top: 20px;
+    }
+    .svo-bottom-label {
+      margin-bottom: 20px;
+    }
     .svo-slider {
       width: 100%;
-      margin: 30px 0;
+      margin: 10px 0;
     }
     .svo-values {
-      display: flex;
-      justify-content: space-between;
       width: 100%;
-    }
-    .svo-value {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-    }
-    .svo-value-self {
-      margin-bottom: 30px;
-    }
-    .svo-value-other {
-      margin-top: 30px;
-    }
-    .svo-divider {
-      height: 40px;
-      width: 1px;
-      background-color: #999;
+      padding: 0 10px;
     }
     .svo-instructions {
       background-color: #f8f9fa;
@@ -193,7 +182,7 @@ ui <- fluidPage(
       padding: 15px;
       margin-bottom: 20px;
     }
-    /* Mobile-specific styles */
+/* Mobile-specific styles */
     @media (max-width: 768px) {
       body {
         font-size: 14px;
@@ -505,52 +494,48 @@ ui <- fluidPage(
       # SVO Scale
       h4("Social Value Orientation"),
       div(class = "svo-instructions",
-          HTML("<p>In this task you have been randomly paired with another person, whom we will refer to as the other. 
+          HTML("<p>For this section, imagine you have been randomly paired with another person, whom we will refer to as the other. 
                 This other person is someone you do not know and will remain mutually anonymous. All of your choices are completely confidential.</p>
                 <p>You will be making a series of decisions about allocating resources between you and this other person. 
                 For each of the following questions, please indicate the distribution you prefer most by moving the slider to your preferred position.</p>
-                <p>Your decisions will yield money for both yourself and the other person. There are no right or wrong answers, 
-                this is all about personal preferences. Your choices will influence both the amount of money you receive as well as 
-                the amount of money the other receives.</p>")
+                <p>Assume that your decisions would yield money for both yourself and the other person (not really, for course purposes, but answer as if it would). There are no right or wrong answers; 
+                this is all about personal preferences. </p>")
       ),
       
       # SVO Slider items
       lapply(1:6, function(i) {
         tagList(
-          h5(paste("SVO Item", i)),
-          
-          # Define the self/other values for each slider position
-          tags$div(class = "svo-slider-container",
-                   tags$div(class = "svo-labels",
-                            tags$div(class = "svo-label", "You Receive")
-                   ),
-                   
-                   sliderInput(
-                     inputId = paste0("svo", i),
-                     label = NULL,
-                     min = 1,
-                     max = 9,
-                     value = 5,
-                     step = 1,
-                     width = "100%",
-                     ticks = FALSE
-                   ),
-                   
-                   tags$div(class = "svo-labels",
-                            tags$div(class = "svo-label", "Other Receives")
-                   ),
-                   
-                   # This div will be updated by JavaScript to show the current values
-                   tags$div(id = paste0("svo_values_", i), class = "svo-values")
-                  ),
-                  
-                  # Hidden inputs to store the actual values for self and other
-                  tags$div(style = "display: none;",
-                           textInput(paste0("svo", i, "_self_value"), NULL, ""),
-                           textInput(paste0("svo", i, "_other_value"), NULL, "")
-                  ),
-                  
-                  br()
+        # Define the self/other values for each slider position
+        tags$div(class = "svo-slider-container",
+         # This div will display all values and the tick marks
+         tags$div(id = paste0("svo_values_", i), class = "svo-values"),
+         
+         # Display slider in the middle
+         tags$div(class = "svo-labels svo-top-label",
+                 tags$div(class = "svo-label", "You Receive")
+         ),
+         
+         sliderInput(
+           inputId = paste0("svo", i),
+           label = NULL,
+           min = 1,
+           max = 9,
+           value = 5,
+           step = 1,
+           width = "100%",
+           ticks = FALSE
+         ),
+         
+         tags$div(class = "svo-labels svo-bottom-label",
+                 tags$div(class = "svo-label", "Other Receives")
+         ),
+         
+         # Hidden inputs to store the actual values
+         tags$div(style = "display: none;",
+                 textInput(paste0("svo", i, "_self_value"), NULL, ""),
+                 textInput(paste0("svo", i, "_other_value"), NULL, "")
+         )
+        ),
           )
         }),
       
@@ -590,38 +575,74 @@ ui <- fluidPage(
           const selfValue = svoValues[item].self[index];
           const otherValue = svoValues[item].other[index];
           
-          // Update the values display
+          // Update the values display - clear previous content
           const valuesContainer = document.getElementById('svo_values_' + item);
           valuesContainer.innerHTML = '';
           
-          // Create 9 value columns
+          // Create the values display with all values showing at once
+          const container = document.createElement('div');
+          container.style.display = 'flex';
+          container.style.flexDirection = 'column';
+          container.style.width = '100%';
+          
+          // Top row - "You receive" values
+          const selfRow = document.createElement('div');
+          selfRow.style.display = 'flex';
+          selfRow.style.justifyContent = 'space-between';
+          selfRow.style.marginBottom = '10px';
+          
+          // Middle row - tick marks with vertical lines
+          const tickRow = document.createElement('div');
+          tickRow.style.display = 'flex';
+          tickRow.style.justifyContent = 'space-between';
+          tickRow.style.position = 'relative';
+          tickRow.style.height = '40px';
+          
+          // Bottom row - "Other receives" values
+          const otherRow = document.createElement('div');
+          otherRow.style.display = 'flex';
+          otherRow.style.justifyContent = 'space-between';
+          otherRow.style.marginTop = '10px';
+          
+          // Add all 9 values and tick marks
           for (let i = 0; i < 9; i++) {
-            const valueDiv = document.createElement('div');
-            valueDiv.className = 'svo-value';
+            // Create self value cell
+            const selfCell = document.createElement('div');
+            selfCell.textContent = svoValues[item].self[i];
+            selfCell.style.width = '30px';
+            selfCell.style.textAlign = 'center';
+            if (i === index) {
+              selfCell.style.fontWeight = 'bold';
+              selfCell.style.color = '#007bff';
+            }
+            selfRow.appendChild(selfCell);
             
-            // Add self value
-            const selfDiv = document.createElement('div');
-            selfDiv.className = 'svo-value-self';
-            selfDiv.textContent = svoValues[item].self[i];
-            if (i === index) selfDiv.style.fontWeight = 'bold';
+            // Create tick mark
+            const tick = document.createElement('div');
+            tick.style.width = '1px';
+            tick.style.height = '40px';
+            tick.style.backgroundColor = i === index ? '#007bff' : '#999';
+            tickRow.appendChild(tick);
             
-            // Add divider
-            const divider = document.createElement('div');
-            divider.className = 'svo-divider';
-            if (i === index) divider.style.backgroundColor = '#007bff';
-            
-            // Add other value
-            const otherDiv = document.createElement('div');
-            otherDiv.className = 'svo-value-other';
-            otherDiv.textContent = svoValues[item].other[i];
-            if (i === index) otherDiv.style.fontWeight = 'bold';
-            
-            valueDiv.appendChild(selfDiv);
-            valueDiv.appendChild(divider);
-            valueDiv.appendChild(otherDiv);
-            
-            valuesContainer.appendChild(valueDiv);
+            // Create other value cell
+            const otherCell = document.createElement('div');
+            otherCell.textContent = svoValues[item].other[i];
+            otherCell.style.width = '30px';
+            otherCell.style.textAlign = 'center';
+            if (i === index) {
+              otherCell.style.fontWeight = 'bold';
+              otherCell.style.color = '#007bff';
+            }
+            otherRow.appendChild(otherCell);
           }
+          
+          // Assemble the rows
+          container.appendChild(selfRow);
+          container.appendChild(tickRow);
+          container.appendChild(otherRow);
+          
+          // Add the container to the values container
+          valuesContainer.appendChild(container);
           
           // Update hidden inputs with the selected values
           document.getElementById('svo' + item + '_self_value').value = selfValue;
