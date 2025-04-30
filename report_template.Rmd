@@ -1,5 +1,5 @@
 ---
-title: "Negotiation Behavior Inventory Report"
+title: "Negotiation Behaviours and Attitudes Report"
 params:
   name: NA
   df: NA
@@ -8,6 +8,9 @@ params:
   implementation_items: NA
   nfc_items: NA
   ncs_items: NA
+  svo_angle: NA
+  svo_type: NA
+  svo_items: NA
 output:
   pdf_document:
 classoption: a4paper
@@ -27,7 +30,7 @@ geometry: margin = 1in
 
 # `r params$name`
 
-This report provides feedback about how you engage in effective negotiation behaviors. It should be a source of reflection on areas where you are performing well, and areas where you can improve. In each section of the report, you can see how you compare with your peers. *Note: "MBS Participants" refers to the average score of MBS participants.*
+This report provides feedback about how you engage in effective negotiation behaviours. It should be a source of reflection on areas where you are performing well, and areas where you can improve. You will also see feedback about three other properties that affect your negotiations: need for closure, need for cognition, and social value orientation. In each section of the report, you can see an explanation of the measure and how you compare with your peers. *Note: "MBS Participants" refers to the average score of MBS participants.*
 
 
 ```{r setup, include=FALSE}
@@ -58,7 +61,7 @@ ncs_items <- params$ncs_items  # Add this line
 
 # Planning
 
-The planning aspect of negotiation refers behaviors that should take place before the first offer is made. 
+The planning aspect of negotiation refers to behaviours that should take place before the first offer is made. 
 
 ```{r, echo = F, fig.align='center', fig.width = 6.4, fig.height = 1, include = T, message = F, fig.margin = T, warning = F, results = 'asis'}
 pre_df <- plot_data[9, ]
@@ -110,7 +113,7 @@ q1 <- q1 + rotate()
 ```
 
 ```{r, echo = F, fig.align='center', fig.width = 6.4, fig.height = 1, include = T, message = F, fig.margin = T, warning = F, results = 'asis'}
-title <- str_wrap("Understanding the counterpart's intentions and behaviors", width = 40)
+title <- str_wrap("Understanding the counterpart's intentions and behaviours", width = 40)
 title <- unlist(str_split(title, pattern = "\\n", n = Inf, simplify = FALSE), use.names = F)
 title <- str_pad(title, width = 40, side = c("right"), pad = " ")
 title <- paste(title[1], title[2], sep ="\n")
@@ -192,7 +195,7 @@ ggdraw(pl[[4]])
 
 # Need for Closure Assessment
 
-This section shows your responses to the Need for Closure scale, which measures your preference for order, structure, and closure in your thinking and decision-making.
+This section shows your responses to the Need for Closure scale, which measures your preference for order, structure, and closure in your thinking and decision-making. It is common to have somewhat high need for closure, but if your score is very high, that might indicate that you face challenges remaining open and keeping negotiations going long enough to maximise value creation---or coming back to re-discuss issues that had been tentatively decided.
 
 ## Your Need for Closure Profile
 
@@ -254,7 +257,7 @@ Your Need for Closure can influence your negotiation style in several ways:
 
 - Higher scores may indicate a preference for reaching agreements quickly, potentially at the expense of exploring all options.
 - Lower scores may indicate comfort with ambiguity and willingness to keep options open longer during negotiations.
-- Understanding your need for closure can help you recognize when you might be rushing to resolution versus when you might benefit from exploring more options.
+- Understanding your need for closure can help you recognise when you might be rushing to resolution versus when you might benefit from exploring more options.
 
 \newpage
 
@@ -307,13 +310,13 @@ if(exists("ncs_df") && nrow(ncs_df) > 0) {
 
 Your Need for Cognition can influence your negotiation approach in several ways:
 
-- A higher Need for Cognition may lead you to analyze negotiation situations more thoroughly, consider more alternatives, and develop more complex negotiation strategies.
+- A higher Need for Cognition may lead you to analyse negotiation situations more thoroughly, consider more alternatives, and develop more complex negotiation strategies.
 
-- You might enjoy the intellectual challenge of negotiation, including analyzing the other party's interests, crafting persuasive arguments, and finding creative solutions that satisfy both parties.
+- You might enjoy the intellectual challenge of negotiation, including analysing the other party's interests, crafting persuasive arguments, and finding creative solutions that satisfy both parties.
 
-- Understanding your Need for Cognition can help you recognize when you might benefit from more or less cognitive engagement in negotiations depending on the situation.
+- Understanding your Need for Cognition can help you recognise when you might benefit from more or less cognitive engagement in negotiations, depending on the situation.
 
-### Planning behaviors for reflection
+### Planning behaviours for reflection
 
 ```{r, tidy = T, echo = F}
 dypre <- planning_items
@@ -321,22 +324,22 @@ dypre <- planning_items
 dypre <- subset(dypre, Item != "Plan20" & Item != "Plan21")
 
 dypre$q <- c("Spend time thinking about your counterpart's goals.",
-             "Spend time studying your counterpart's tactics and patterns of behavior in similar situations.",
+             "Spend time studying your counterpart's tactics and patterns of behaviour in similar situations.",
              "Spend time studying the counterpart's emotional state as they enter into negotiations.",
-             "Spend time researching if your counterpart might value things differently than you.",
+             "Spend time researching whether your counterpart might value things differently than you.",
              "Spend time researching the counterpart's point of view on the situation.",
-             "Exhaust every source of information at your disposal (including, but not limited to family, friends, co-workers, institutions, the library, and the Internet).",
-             "Research alternative outcomes that satisfy the need of the parties - (i.e., find alternative arrangements that meet you and your counterpart's needs).",
+             "Exhaust every source of information at your disposal (including, but not limited to, family, friends, co-workers, institutions, the library, and the Internet).",
+             "Research alternative outcomes that satisfy the need of the parties (i.e., find alternative arrangements that meet your and your counterpart's needs).",
              "Communicate in advance your intention to negotiate.",
              "Make sure all relevant parties will be included in the negotiation.",
              "Establish a shared perception of the situation that requires resolution.",
-             "Attempt to remove or minimize distractions that could draw attention away from the negotiation.",
+             "Attempt to remove or minimise distractions that could draw attention away from the negotiation.",
              "Spend time researching the events leading to the negotiation.",
              "Spend time thinking about your goals.",
-             "Prioritize the goals for the negotiation.",
+             "Prioritise the goals for the negotiation.",
              "Create a table or list of what you value most to what you value least.",
              "Ensure that you have the necessary resources to follow through with the deal that you reach.",
-             "Maintain competence in the skills needed to analyze the deal (e.g., technical evaluation, accounting, developing relationships, etc.).",
+             "Maintain competence in the skills needed to analyse the deal (e.g., technical evaluation, accounting, developing relationships, etc.).",
              "Understand your no-deal options.",
              "Understand your counterpart's no-deal options.")
 
@@ -367,7 +370,7 @@ dypre$Dimension <- c("Understanding the counterpart",
 
 dypre <- dypre[, c(5, 3, 2, 4)]
 
-colnames(dypre) <- c("Dimension", "Behavior", "You", "MBS Participants")
+colnames(dypre) <- c("Dimension", "Behaviour", "You", "MBS Participants")
 
 dypre <- dypre[order(dypre$You, decreasing = TRUE), ]
 
@@ -390,6 +393,145 @@ writeLines("\\end{flushleft}")
 ```{r, echo = F}
 kable(dypre[17:19, ],  row.names	= F)
 ```
+
+\newpage
+
+# Social Value Orientation (SVO)
+
+Social Value Orientation (SVO) describes how people value outcomes for themselves and others in interdependent situations. Your SVO profile indicates your preferences for allocating resources between yourself and others.
+
+## Your SVO Results
+
+```{r svo_chart, echo=FALSE, fig.width=7, fig.height=4, fig.align='center'}
+# Check if SVO angle exists in the data
+if(exists("params") && !is.null(params$svo_angle) && !is.na(params$svo_angle)) {
+  # Create angle visualization
+  angle_rad <- params$svo_angle * pi / 180
+  x_end <- cos(angle_rad)
+  y_end <- sin(angle_rad)
+  
+  # Create the circular plot
+  ggplot() + 
+    # Add the circle
+    stat_function(fun = function(x) sqrt(1 - x^2), geom = "line", n = 500, 
+                  xlim = c(-1, 1), color = "gray60") +
+    stat_function(fun = function(x) -sqrt(1 - x^2), geom = "line", n = 500, 
+                  xlim = c(-1, 1), color = "gray60") +
+    # Add reference lines for the orientation types
+    geom_segment(aes(x = 0, y = 0, xend = 1, yend = 0), 
+                 linetype = "dashed", color = "gray70") +
+    geom_segment(aes(x = 0, y = 0, xend = 1, yend = 1), 
+                 linetype = "dashed", color = "gray70") +
+    geom_segment(aes(x = 0, y = 0, xend = 0, yend = 1), 
+                 linetype = "dashed", color = "gray70") +
+    # Add the SVO angle line
+    geom_segment(aes(x = 0, y = 0, xend = x_end, yend = y_end), 
+                 arrow = arrow(length = unit(0.3, "cm")), color = "#007bff", size = 1.2) +
+    # Add the labels for the orientations
+    annotate("text", x = 0, y = 1.1, label = "Altruistic", color = "gray40") +
+    annotate("text", x = 0.8, y = 0.8, label = "Prosocial", color = "gray40") +
+    annotate("text", x = 1.1, y = 0, label = "Individualistic", color = "gray40") +
+    annotate("text", x = 0.8, y = -0.8, label = "Competitive", color = "gray40") +
+    # Add angle label
+    annotate("text", x = x_end/2 - 0.1, y = y_end/2 + 0.1, 
+             label = paste0(round(params$svo_angle, 1), "°"), 
+             color = "#007bff", fontface = "bold") +
+    # Set the plot appearance
+    coord_fixed(ratio = 1, xlim = c(-1.2, 1.2), ylim = c(-1.2, 1.2)) +
+    theme_minimal() +
+    theme(axis.text = element_blank(),
+          axis.title = element_blank(),
+          axis.ticks = element_blank(),
+          panel.grid = element_blank(),
+          plot.title = element_text(hjust = 0.5)) +
+    ggtitle("Your Social Value Orientation")
+} else {
+  # Show a message if SVO data is missing
+  grid::grid.text("SVO data not available", gp = grid::gpar(fontsize = 14, col = "gray50"))
+}
+```
+
+```{r svo_type_display, echo=FALSE, results='asis'}
+if(exists("params") && !is.null(params$svo_type) && !is.na(params$svo_type)) {
+  cat("**Your SVO angle:** ", round(params$svo_angle, 2), "°\n\n")
+  cat("**Your SVO type:** ", params$svo_type, "\n\n")
+}
+```
+
+## What Your SVO Type Means
+
+```{r svo_interpretation, echo=FALSE, results='asis'}
+if(exists("params") && !is.null(params$svo_type)) {
+  cat("Based on your responses, your Social Value Orientation is classified as **", params$svo_type, "**. This means:\n\n")
+  
+  if(params$svo_type == "Competitive") {
+    cat("You tend to maximise your own outcomes relative to others, potentially seeking advantage over others even at a cost to joint outcomes. In negotiations, this may appear as a win-lose approach.")
+  } else if(params$svo_type == "Individualistic") {
+    cat("You tend to maximise your own outcomes without strong regard for others' outcomes. In negotiations, this often appears as a focus on claiming value for yourself.")
+  } else if(params$svo_type == "Prosocial") {
+    cat("You tend to maximise joint outcomes and equality in distributions. In negotiations, this often appears as a focus on creating value and finding win-win solutions.")
+  } else if(params$svo_type == "Altruistic") {
+    cat("You tend to prioritise others' outcomes over your own. In negotiations, this might appear as an emphasis on the counterpart's needs and interests.")
+  } else {
+    cat("Your responses resulted in an unclassified orientation. This sometimes happens when responses fall on the boundary between categories.")
+  }
+}
+```
+
+## SVO and Negotiation
+
+Your Social Value Orientation has important implications for how you approach negotiations:
+
+- **Competitive** orientations may focus strongly on winning and gaining advantage over others.
+- **Individualistic** orientations may focus on maximising personal gain without much concern for the counterpart.
+- **Prosocial** orientations tend to look for mutually beneficial outcomes and fair distributions.
+- **Altruistic** orientations may prioritise the counterpart's needs, sometimes at personal cost.
+
+Understanding your own orientation can help you recognise when your natural tendencies might help or hinder different types of negotiations. For instance, prosocial orientations may excel in long-term relationship building, while individualistic orientations might serve better in one-time distributive bargaining.
+
+```{r svo_benchmark, echo=FALSE, fig.width=7, fig.height=3, fig.align='center'}
+# Create benchmark comparison if data exists
+if(exists("plot_data") && "SVO_angle" %in% plot_data$Category) {
+  # Extract SVO angle data
+  svo_df <- plot_data %>% 
+    filter(Category == "SVO_angle")
+  
+  # Create the benchmark comparison
+  benchmark <- svo_df$Benchmark[1]
+  user_svo <- svo_df$Your_Response[1]
+  
+  # Create the plot with category boundaries
+  ggplot() +
+    # Add category background colors
+    geom_rect(aes(xmin = -90, xmax = -12.04, ymin = 0, ymax = 1), fill = "#f8f9fa", alpha = 0.5) +
+    geom_rect(aes(xmin = -12.04, xmax = 22.45, ymin = 0, ymax = 1), fill = "#e9ecef", alpha = 0.5) +
+    geom_rect(aes(xmin = 22.45, xmax = 57.15, ymin = 0, ymax = 1), fill = "#f8f9fa", alpha = 0.5) +
+    geom_rect(aes(xmin = 57.15, xmax = 90, ymin = 0, ymax = 1), fill = "#e9ecef", alpha = 0.5) +
+    # Add category labels
+    annotate("text", x = -51, y = 0.5, label = "Competitive", color = "gray40") +
+    annotate("text", x = 5, y = 0.5, label = "Individualistic", color = "gray40") +
+    annotate("text", x = 40, y = 0.5, label = "Prosocial", color = "gray40") +
+    annotate("text", x = 73.5, y = 0.5, label = "Altruistic", color = "gray40") +
+    # Add the benchmark line
+    geom_vline(xintercept = benchmark, color = "gray60", linetype = "dashed", size = 1) +
+    annotate("text", x = benchmark, y = 0.85, label = "Benchmark", color = "gray60") +
+    # Add the user's score
+    geom_vline(xintercept = user_svo, color = "#007bff", size = 1.2) +
+    annotate("text", x = user_svo, y = 0.15, label = "Your Score", color = "#007bff", fontface = "bold") +
+    # Set the plot appearance
+    scale_x_continuous(limits = c(-90, 90), breaks = c(-90, -45, 0, 45, 90)) +
+    scale_y_continuous(limits = c(0, 1)) +
+    theme_minimal() +
+    theme(axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.title.y = element_blank(),
+          panel.grid.major.y = element_blank(),
+          panel.grid.minor = element_blank()) +
+    labs(x = "SVO Angle (degrees)", title = "Your SVO Compared to Benchmarks")
+}
+```
+
+Most people (approximately 60%) are classified as prosocial, while about 30% are individualistic, 5% competitive, and 5% altruistic. Your position relative to these distributions can help you understand your natural tendencies compared to others.
 
 \newpage
 
@@ -527,7 +669,7 @@ ggdraw(bl[[4]])
 
 \newpage
 
-## Bargaining behaviors for reflection
+## Bargaining behaviours for reflection
 
 ```{r, tidy = T, echo = F}
 dybar <- bargaining_items
@@ -536,7 +678,7 @@ dybar <- subset(dybar, Item != "Barg10")
 
 dybar <- dybar[1:25, ]
  
-dybar$q <- c("Have plans in advance to deal with counterproductive (e.g., negative, extreme, irrational) behavior from your counterpart.",
+dybar$q <- c("Have plans in advance to deal with counterproductive (e.g., negative, extreme, irrational) behaviour from your counterpart.",
 "Ask questions to learn about your counterpart.",
 "Test your understanding of what your counterpart was trying to say by repeating what they said.",
 "Try to focus on satisfying your underlying needs rather than a specific list of requirements.",
@@ -545,9 +687,9 @@ dybar$q <- c("Have plans in advance to deal with counterproductive (e.g., negati
 "Try to reach a deal that touches on all of the issues involved.",
 "Review the final terms with your counterpart to confirm mutual agreement about their interpretation.",
 "Make sure that you were fully understood.",
-"Check if your arguments are persuasive.",
-"Check if your counterpart is telling the truth.",
-"Check if the counterpart is committed to making a deal with you.",
+"Check whether your arguments are persuasive.",
+"Check whether your counterpart is telling the truth.",
+"Check whether the counterpart is committed to making a deal with you.",
 "Make sure the help you are getting is appropriate for the task at hand.",
 "Justify each offer with a reason.",
 "Provide reasons that the counterpart should find plausible.",
@@ -596,7 +738,7 @@ dybar$Dimension <- c("Working for mutual benefit",
 
 dybar <- dybar[, c(5, 3, 2, 4)]
 
-colnames(dybar) <- c("Dimension", "Behavior", "You", "MBS Participants")
+colnames(dybar) <- c("Dimension", "Behaviour", "You", "MBS Participants")
 
 dybar <- dybar[order(dybar$You, decreasing = TRUE), ]
 ```
@@ -720,7 +862,7 @@ dyimp$c_value <- c(5.48, 4.97, 5.25, 4.1, 4.22)
 
 dyimp <- dyimp[, c(4, 3, 2, 5)]
 
-colnames(dyimp) <- c("Dimension", "Behavior", "You", "MBS Participants")
+colnames(dyimp) <- c("Dimension", "Behaviour", "You", "MBS Participants")
 
 dyimp <- dyimp[order(dyimp$You, decreasing = TRUE), ]
 ```
