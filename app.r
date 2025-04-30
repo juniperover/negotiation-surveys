@@ -24,32 +24,6 @@ if (key_path == "") {
   stop("Google Sheets key environment variable not found")
 }
 
-library(shiny)
-library(googlesheets4)
-library(dplyr)
-library(ggplot2)
-library(gridExtra)
-library(this.path)
-library(shinyjs)  
-library(knitr)
-library(rmarkdown)
-library(tools)
-library(openxlsx)
-library(xtable)
-library(grid)
-library(ggpubr)
-library(stringr)
-library(cowplot)
-library(tidyr)
-
-setwd(this.path::here())
-
-# Use environment variable to authenticate
-key_path <- Sys.getenv("google_sheets_key", "")
-if (key_path == "") {
-  stop("Google Sheets key environment variable not found")
-}
-
 # Define UI
 ui <- fluidPage(
   useShinyjs(),  # Initialize shinyjs
@@ -143,7 +117,6 @@ ui <- fluidPage(
       cursor: not-allowed;
     }
     /* SVO slider styles */
- 
     .svo-container {
       margin: 30px 0;
       position: relative;
@@ -182,7 +155,7 @@ ui <- fluidPage(
       padding: 15px;
       margin-bottom: 20px;
     }
-/* Mobile-specific styles */
+    /* Mobile-specific styles */
     @media (max-width: 768px) {
       body {
         font-size: 14px;
@@ -243,8 +216,14 @@ ui <- fluidPage(
       textInput("email", "Email:"),
       div(id = "email_error", class = "error-message"),
       numericInput("age", "Age:", value = 18, min = 1, max = 120),
-      selectInput("gender", "Gender:", 
-                  choices = c(" ", "Male", "Female", "Other"))
+      
+      # Modified gender question with self-identify option
+      radioButtons("gender", "Gender:", 
+                  choices = c("Man", "Woman", "Prefer to self-identify")),
+      conditionalPanel(
+        condition = "input.gender == 'Prefer to self-identify'",
+        textInput("gender_self", "Please specify:")
+      )
     ),
     
     mainPanel(
@@ -502,42 +481,44 @@ ui <- fluidPage(
                 this is all about personal preferences. </p>")
       ),
       
-      # SVO Slider items
+      # SVO Slider items - FIXED version with correct structure
       lapply(1:6, function(i) {
         tagList(
-        # Define the self/other values for each slider position
-        tags$div(class = "svo-slider-container",
-         # This div will display all values and the tick marks
-         tags$div(id = paste0("svo_values_", i), class = "svo-values"),
-         
-         # Display slider in the middle
-         tags$div(class = "svo-labels svo-top-label",
-                 tags$div(class = "svo-label", "You Receive")
-         ),
-         
-         sliderInput(
-           inputId = paste0("svo", i),
-           label = NULL,
-           min = 1,
-           max = 9,
-           value = 5,
-           step = 1,
-           width = "100%",
-           ticks = FALSE
-         ),
-         
-         tags$div(class = "svo-labels svo-bottom-label",
-                 tags$div(class = "svo-label", "Other Receives")
-         ),
-         
-         # Hidden inputs to store the actual values
-         tags$div(style = "display: none;",
-                 textInput(paste0("svo", i, "_self_value"), NULL, ""),
-                 textInput(paste0("svo", i, "_other_value"), NULL, "")
-         )
-        ),
+          h5(paste("SVO Item", i)),
+          
+          # Define the self/other values for each slider position
+          tags$div(class = "svo-slider-container",
+            # This div will display all values and the tick marks
+            tags$div(id = paste0("svo_values_", i), class = "svo-values"),
+            
+            # Display slider in the middle
+            tags$div(class = "svo-labels svo-top-label",
+                    tags$div(class = "svo-label", "You Receive")
+            ),
+            
+            sliderInput(
+              inputId = paste0("svo", i),
+              label = NULL,
+              min = 1,
+              max = 9,
+              value = 5,
+              step = 1,
+              width = "100%",
+              ticks = FALSE
+            ),
+            
+            tags$div(class = "svo-labels svo-bottom-label",
+                    tags$div(class = "svo-label", "Other Receives")
+            ),
+            
+            # Hidden inputs to store the actual values
+            tags$div(style = "display: none;",
+                    textInput(paste0("svo", i, "_self_value"), NULL, ""),
+                    textInput(paste0("svo", i, "_other_value"), NULL, "")
+            )
           )
-        }),
+        )
+      }),
       
       # Add JavaScript to update the SVO values when sliders change
       tags$script(HTML("
@@ -585,7 +566,7 @@ ui <- fluidPage(
           container.style.flexDirection = 'column';
           container.style.width = '100%';
           
-          // Top row - "You receive" values
+          // Top row - \"You receive\" values
           const selfRow = document.createElement('div');
           selfRow.style.display = 'flex';
           selfRow.style.justifyContent = 'space-between';
@@ -598,7 +579,7 @@ ui <- fluidPage(
           tickRow.style.position = 'relative';
           tickRow.style.height = '40px';
           
-          // Bottom row - "Other receives" values
+          // Bottom row - \"Other receives\" values
           const otherRow = document.createElement('div');
           otherRow.style.display = 'flex';
           otherRow.style.justifyContent = 'space-between';
@@ -811,14 +792,19 @@ server <- function(input, output, session) {
         as.numeric(input$svo6_other_value)
       )
       
+      # Get gender value (handle self-identified)
+      gender_value <- input$gender
+      if (gender_value == "Prefer to self-identify" && !is.null(input$gender_self) && nzchar(input$gender_self)) {
+        gender_value <- paste("Self-identified:", input$gender_self)
+      }
+      
       # Create response data frame
-      # Calculate SVO values - store the slider position values for consistency
       user_responses <- data.frame(
         Timestamp = Sys.time(),
         Name = input$name,
         Email = input$email,
         Age = input$age,
-        Gender = input$gender,
+        Gender = gender_value,
         Plan1 = as.numeric(input$plan1),
         Plan2 = as.numeric(input$plan2),
         Plan3 = as.numeric(input$plan3),
@@ -931,7 +917,7 @@ server <- function(input, output, session) {
         SVO6_Other = svo_other_values[6]
       )
       
-      # This part should be added after the user_responses data frame creation:
+      # Calculate summary scores
       user_responses <- user_responses %>%
         mutate(
           pre_count = rowMeans(select(., Plan1:Plan5), na.rm = TRUE),
@@ -989,9 +975,6 @@ server <- function(input, output, session) {
           )
         )
       
-      # Print the data frame for debugging
-      # print(user_responses)
-      
       shinyjs::show("loading")
       
       tryCatch({
@@ -1033,8 +1016,6 @@ server <- function(input, output, session) {
     }
   )
 }
-
-
 # Helper function to generate report
 generate_report <- function(user_responses) {
   # Define benchmarks
