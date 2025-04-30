@@ -136,18 +136,17 @@ ui <- fluidPage(
       font-size: 16px;
     }
     .svo-top-label {
-      margin-top: 20px;
+      margin-top: 10px;
     }
     .svo-bottom-label {
-      margin-bottom: 20px;
-    }
-    .svo-slider {
-      width: 100%;
-      margin: 10px 0;
+      margin-bottom: 10px;
     }
     .svo-values {
       width: 100%;
-      padding: 0 10px;
+      margin-bottom: 10px;
+    }
+    .svo-values table {
+      width: 100%;
     }
     .svo-instructions {
       background-color: #f8f9fa;
@@ -155,7 +154,7 @@ ui <- fluidPage(
       padding: 15px;
       margin-bottom: 20px;
     }
-    /* Mobile-specific styles */
+/* Mobile-specific styles */
     @media (max-width: 768px) {
       body {
         font-size: 14px;
@@ -550,86 +549,92 @@ ui <- fluidPage(
           }
         };
         
-        // Function to update the displayed values and hidden inputs
-        function updateSVOValues(item, value) {
-          const index = value - 1; // Convert to 0-based index
-          const selfValue = svoValues[item].self[index];
-          const otherValue = svoValues[item].other[index];
-          
-          // Update the values display - clear previous content
-          const valuesContainer = document.getElementById('svo_values_' + item);
-          valuesContainer.innerHTML = '';
-          
-          // Create the values display with all values showing at once
-          const container = document.createElement('div');
-          container.style.display = 'flex';
-          container.style.flexDirection = 'column';
-          container.style.width = '100%';
-          
-          // Top row - \"You receive\" values
-          const selfRow = document.createElement('div');
-          selfRow.style.display = 'flex';
-          selfRow.style.justifyContent = 'space-between';
-          selfRow.style.marginBottom = '10px';
-          
-          // Middle row - tick marks with vertical lines
-          const tickRow = document.createElement('div');
-          tickRow.style.display = 'flex';
-          tickRow.style.justifyContent = 'space-between';
-          tickRow.style.position = 'relative';
-          tickRow.style.height = '40px';
-          
-          // Bottom row - \"Other receives\" values
-          const otherRow = document.createElement('div');
-          otherRow.style.display = 'flex';
-          otherRow.style.justifyContent = 'space-between';
-          otherRow.style.marginTop = '10px';
-          
-          // Add all 9 values and tick marks
-          for (let i = 0; i < 9; i++) {
-            // Create self value cell
-            const selfCell = document.createElement('div');
-            selfCell.textContent = svoValues[item].self[i];
-            selfCell.style.width = '30px';
-            selfCell.style.textAlign = 'center';
-            if (i === index) {
-              selfCell.style.fontWeight = 'bold';
-              selfCell.style.color = '#007bff';
-            }
-            selfRow.appendChild(selfCell);
-            
-            // Create tick mark
-            const tick = document.createElement('div');
-            tick.style.width = '1px';
-            tick.style.height = '40px';
-            tick.style.backgroundColor = i === index ? '#007bff' : '#999';
-            tickRow.appendChild(tick);
-            
-            // Create other value cell
-            const otherCell = document.createElement('div');
-            otherCell.textContent = svoValues[item].other[i];
-            otherCell.style.width = '30px';
-            otherCell.style.textAlign = 'center';
-            if (i === index) {
-              otherCell.style.fontWeight = 'bold';
-              otherCell.style.color = '#007bff';
-            }
-            otherRow.appendChild(otherCell);
-          }
-          
-          // Assemble the rows
-          container.appendChild(selfRow);
-          container.appendChild(tickRow);
-          container.appendChild(otherRow);
-          
-          // Add the container to the values container
-          valuesContainer.appendChild(container);
-          
-          // Update hidden inputs with the selected values
-          document.getElementById('svo' + item + '_self_value').value = selfValue;
-          document.getElementById('svo' + item + '_other_value').value = otherValue;
-        }
-        
+// Function to update the displayed values and hidden inputs
+function updateSVOValues(item, value) {
+  const index = value - 1; // Convert to 0-based index
+  const selfValue = svoValues[item].self[index];
+  const otherValue = svoValues[item].other[index];
+  
+  // Update hidden inputs with the selected values
+  document.getElementById('svo' + item + '_self_value').value = selfValue;
+  document.getElementById('svo' + item + '_other_value').value = otherValue;
+  
+  // Clear previous values display
+  const valuesContainer = document.getElementById('svo_values_' + item);
+  valuesContainer.innerHTML = '';
+  
+  // Create table for alignment
+  const table = document.createElement('table');
+  table.style.width = '100%';
+  table.style.borderCollapse = 'collapse';
+  
+  // Create top row for "You Receive" values
+  const topRow = document.createElement('tr');
+  
+  // Add cells for each value
+  for (let i = 0; i < 9; i++) {
+    const cell = document.createElement('td');
+    cell.style.textAlign = 'center';
+    cell.style.padding = '5px';
+    cell.textContent = svoValues[item].self[i];
+    
+    // Highlight the selected value
+    if (i === index) {
+      cell.style.fontWeight = 'bold';
+      cell.style.color = '#007bff';
+    }
+    
+    topRow.appendChild(cell);
+  }
+  
+  // Create middle row for tick marks
+  const middleRow = document.createElement('tr');
+  middleRow.style.height = '20px';
+  
+  // Add tick mark cells
+  for (let i = 0; i < 9; i++) {
+    const cell = document.createElement('td');
+    cell.style.textAlign = 'center';
+    cell.style.position = 'relative';
+    
+    // Create the tick mark
+    const tick = document.createElement('div');
+    tick.style.width = '1px';
+    tick.style.height = '20px';
+    tick.style.backgroundColor = i === index ? '#007bff' : '#999';
+    tick.style.margin = '0 auto';
+    
+    cell.appendChild(tick);
+    middleRow.appendChild(cell);
+  }
+  
+  // Create bottom row for "Other Receives" values
+  const bottomRow = document.createElement('tr');
+  
+  // Add cells for each value
+  for (let i = 0; i < 9; i++) {
+    const cell = document.createElement('td');
+    cell.style.textAlign = 'center';
+    cell.style.padding = '5px';
+    cell.textContent = svoValues[item].other[i];
+    
+    // Highlight the selected value
+    if (i === index) {
+      cell.style.fontWeight = 'bold';
+      cell.style.color = '#007bff';
+    }
+    
+    bottomRow.appendChild(cell);
+  }
+  
+  // Add all rows to the table
+  table.appendChild(topRow);
+  table.appendChild(middleRow);
+  table.appendChild(bottomRow);
+  
+  // Add the table to the values container
+  valuesContainer.appendChild(table);
+}      
         // Initialize all sliders
         $(document).ready(function() {
           for (let i = 1; i <= 6; i++) {
