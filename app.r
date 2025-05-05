@@ -667,6 +667,63 @@ $(document).ready(function() {
 
 # Server logic
 server <- function(input, output, session) {
+  
+  is_valid_email <- function(x) {
+    grepl("^[[:alnum:]._%-]+@[[:alnum:].-]+\\.[[:alpha:]]{2,}$", x)
+  }
+  
+  # Reactive value to store the generated report
+  report <- reactiveVal(NULL)
+  
+  # Add this observer to handle the styling of selected items for all question sets
+  observe({
+    # For 'item' questions
+    lapply(1:21, function(i) {
+      selected_value <- input[[paste0("plan", i)]]
+      lapply(1:7, function(j) {
+        if (!is.null(selected_value) && selected_value == j) {
+          shinyjs::addClass(id = paste0("plan", i, "_", j), class = "selected")
+        } else {
+          shinyjs::removeClass(id = paste0("plan", i, "_", j), class = "selected")
+        }
+      })
+    })
+    
+    # For 'barg' questions
+    lapply(1:26, function(i) {
+      selected_value <- input[[paste0("barg", i)]]
+      lapply(1:7, function(j) {
+        if (!is.null(selected_value) && selected_value == j) {
+          shinyjs::addClass(id = paste0("barg", i, "_", j), class = "selected")
+        } else {
+          shinyjs::removeClass(id = paste0("barg", i, "_", j), class = "selected")
+        }
+      })
+    })
+    
+    # For 'post' questions
+    lapply(1:8, function(i) {
+      selected_value <- input[[paste0("post", i)]]
+      lapply(1:7, function(j) {
+        if (!is.null(selected_value) && selected_value == j) {
+          shinyjs::addClass(id = paste0("post", i, "_", j), class = "selected")
+        } else {
+          shinyjs::removeClass(id = paste0("post", i, "_", j), class = "selected")
+        }
+      })
+    })
+    
+    # For 'nfc' questions (Need for Closure)
+    lapply(1:15, function(i) {
+      selected_value <- input[[paste0("nfc", i)]]
+      lapply(1:6, function(j) {
+        if (!is.null(selected_value) && selected_value == j) {
+          shinyjs::addClass(id = paste0("nfc", i, "_", j), class = "selected")
+        } else {
+          shinyjs::removeClass(id = paste0("nfc", i, "_", j), class = "selected")
+        }
+      })
+    })
     
     # For 'ncs' questions (Need for Cognition Scale)
     lapply(1:18, function(i) {
@@ -679,9 +736,26 @@ server <- function(input, output, session) {
         }
       })
     })
-  }
-
-observeEvent(input$submit, {
+  })
+  
+  # Create downloadButton UI
+  output$downloadButton <- renderUI({
+    if (!is.null(report())) {
+      downloadButton("downloadReport", "Download Your Report")
+    }
+  })
+  
+  # Define downloadReport handler
+  output$downloadReport <- downloadHandler(
+    filename = function() {
+      paste0("report_", gsub("[^[:alnum:]]", "_", input$name), ".pdf")
+    },
+    content = function(file) {
+      file.copy(report(), file)
+    }
+  )
+  
+  observeEvent(input$submit, {
     # Disable the submit button and update its text
     shinyjs::disable("submit")
     shinyjs::html("submit", "Generating your report, please wait...")
@@ -926,42 +1000,32 @@ observeEvent(input$submit, {
       
       shinyjs::show("loading")
       
-    tryCatch({
-      # Send to Google Sheets 
-      sheet_id <- "19cbvKPdMlg7vr9XBNZsVdkbsrQl0nETpatpcJW2_9nU"
-      sheet_append(sheet_id, user_responses)
-      
-      # Generate report
-      report(generate_report(user_responses))
-      
-      shinyjs::hide("loading")
-      
-      # Enable the download button
-      output$downloadButton <- renderUI({
-        downloadButton("downloadReport", "Download Your Report")
+      tryCatch({
+        # Send to Google Sheets 
+        sheet_id <- "19cbvKPdMlg7vr9XBNZsVdkbsrQl0nETpatpcJW2_9nU"
+        sheet_append(sheet_id, user_responses)
+        
+        # Generate report
+        report(generate_report(user_responses))
+        
+        shinyjs::hide("loading")
+        
+        # Update the submit button text
+        shinyjs::html("submit", "Report Generated")
+        
+      }, error = function(e) {
+        # Show error alert
+        shinyjs::alert(paste("An error occurred:", e$message))
+        
+        # Re-enable the submit button
+        shinyjs::enable("submit")
+        shinyjs::html("submit", "Submit")
+        shinyjs::removeClass("submit", "disabled-button")
+        shinyjs::hide("loading")
       })
-      
-      # Update the submit button text
-      shinyjs::html("submit", "Report Generated")
-      
-    }, error = function(e) {
-      # Remove the output$thankYou line since it's not defined
-      shinyjs::enable("submit")
-      shinyjs::html("submit", "Submit")
-      shinyjs::removeClass("submit", "disabled-button")
-      shinyjs::alert(paste("An error occurred:", e$message))
-    })
     }
   })
-  
-  output$downloadReport <- downloadHandler(
-    filename = function() {
-      paste0("report_", gsub("[^[:alnum:]]", "_", input$name), ".pdf")
-    },
-    content = function(file) {
-      file.copy(report(), file)
-    }
-  )
+}
 
 
 # Helper function to generate report
