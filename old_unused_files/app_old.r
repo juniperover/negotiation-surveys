@@ -197,7 +197,7 @@ ui <- fluidPage(
     # Add the reference to external JavaScript file here
     tags$script(src = "svo.js")
   ),
-  
+
   fluidRow(
     column(8, titlePanel("Negotiation Behavior Inventory")),
     column(4, tags$img(src = "mbslogo.jpg", height = "100px", style = "float:right;"))
@@ -374,7 +374,7 @@ ui <- fluidPage(
           br()
         )
       }),
-      
+    
       # Need for Closure Scale
       h4("Need for Closure Scale"),
       h4("Please indicate the extent to which you agree or disagree with each of the following statements."),
@@ -568,7 +568,7 @@ function updateSVOValues(item, value) {
   table.style.width = '100%';
   table.style.borderCollapse = 'collapse';
   
-  // Create top row for 'You Receive' values
+  // Create top row for "You Receive" values
   const topRow = document.createElement('tr');
   
   // Add cells for each value
@@ -608,7 +608,7 @@ function updateSVOValues(item, value) {
     middleRow.appendChild(cell);
   }
   
-  // Create bottom row for 'Other Receives' values
+  // Create bottom row for "Other Receives" values
   const bottomRow = document.createElement('tr');
   
   // Add cells for each value
@@ -634,20 +634,19 @@ function updateSVOValues(item, value) {
   
   // Add the table to the values container
   valuesContainer.appendChild(table);
-}
-
-// Initialize all sliders
-$(document).ready(function() {
-  for (let i = 1; i <= 6; i++) {
-    // Initialize with default value
-    updateSVOValues(i, 5);
-    
-    // Add change listener
-    $('#svo' + i).on('change', function(e) {
-      updateSVOValues(i, parseInt(e.target.value));
-    });
-  }
-});
+}      
+        // Initialize all sliders
+        $(document).ready(function() {
+          for (let i = 1; i <= 6; i++) {
+            // Initialize with default value
+            updateSVOValues(i, 5);
+            
+            // Add change listener
+            $('#svo' + i).on('change', function(e) {
+              updateSVOValues(i, parseInt(e.target.value));
+            });
+          }
+        });
       ")),
       
       # Add the submit button and download section
@@ -667,6 +666,63 @@ $(document).ready(function() {
 
 # Server logic
 server <- function(input, output, session) {
+  
+  is_valid_email <- function(x) {
+    grepl("^[[:alnum:]._%-]+@[[:alnum:].-]+\\.[[:alpha:]]{2,}$", x)
+  }
+  
+  # Reactive value to store the generated report
+  report <- reactiveVal(NULL)
+  
+  # Add this observer to handle the styling of selected items for all question sets
+  observe({
+    # For 'item' questions
+    lapply(1:21, function(i) {
+      selected_value <- input[[paste0("plan", i)]]
+      lapply(1:7, function(j) {
+        if (!is.null(selected_value) && selected_value == j) {
+          shinyjs::addClass(id = paste0("plan", i, "_", j), class = "selected")
+        } else {
+          shinyjs::removeClass(id = paste0("plan", i, "_", j), class = "selected")
+        }
+      })
+    })
+    
+    # For 'barg' questions
+    lapply(1:26, function(i) {
+      selected_value <- input[[paste0("barg", i)]]
+      lapply(1:7, function(j) {
+        if (!is.null(selected_value) && selected_value == j) {
+          shinyjs::addClass(id = paste0("barg", i, "_", j), class = "selected")
+        } else {
+          shinyjs::removeClass(id = paste0("barg", i, "_", j), class = "selected")
+        }
+      })
+    })
+    
+    # For 'post' questions
+    lapply(1:8, function(i) {
+      selected_value <- input[[paste0("post", i)]]
+      lapply(1:7, function(j) {
+        if (!is.null(selected_value) && selected_value == j) {
+          shinyjs::addClass(id = paste0("post", i, "_", j), class = "selected")
+        } else {
+          shinyjs::removeClass(id = paste0("post", i, "_", j), class = "selected")
+        }
+      })
+    })
+    
+    # For 'nfc' questions (Need for Closure)
+    lapply(1:15, function(i) {
+      selected_value <- input[[paste0("nfc", i)]]
+      lapply(1:6, function(j) {
+        if (!is.null(selected_value) && selected_value == j) {
+          shinyjs::addClass(id = paste0("nfc", i, "_", j), class = "selected")
+        } else {
+          shinyjs::removeClass(id = paste0("nfc", i, "_", j), class = "selected")
+        }
+      })
+    })
     
     # For 'ncs' questions (Need for Cognition Scale)
     lapply(1:18, function(i) {
@@ -680,8 +736,8 @@ server <- function(input, output, session) {
       })
     })
   })
-
-observeEvent(input$submit, {
+  
+  observeEvent(input$submit, {
     # Disable the submit button and update its text
     shinyjs::disable("submit")
     shinyjs::html("submit", "Generating your report, please wait...")
@@ -965,7 +1021,6 @@ observeEvent(input$submit, {
     }
   )
 }
-
 # Helper function to generate report
 generate_report <- function(user_responses) {
   # Define benchmarks
@@ -1111,4 +1166,3 @@ generate_report <- function(user_responses) {
 
 # Run the application 
 shinyApp(ui = ui, server = server)
-
