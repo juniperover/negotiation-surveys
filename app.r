@@ -926,33 +926,31 @@ observeEvent(input$submit, {
       
       shinyjs::show("loading")
       
-      tryCatch({
-        # Send to Google Sheets 
-        sheet_id <- "19cbvKPdMlg7vr9XBNZsVdkbsrQl0nETpatpcJW2_9nU"
-        sheet_append(sheet_id, user_responses)
-        
-        # Generate report
-        report(generate_report(user_responses))
-        
-        shinyjs::hide("loading")
-        
-        # Enable the download button
-        output$downloadButton <- renderUI({
-          downloadButton("downloadReport", "Download Your Report")
-        })
-        
-        # Update the submit button text
-        shinyjs::html("submit", "Report Generated")
-        
-      }, error = function(e) {
-        output$thankYou <- renderText({
-          paste("An error occurred:", e$message)
-        })
-        shinyjs::enable("submit")
-        shinyjs::html("submit", "Submit")
-        shinyjs::removeClass("submit", "disabled-button")
-        shinyjs::alert(paste("An error occurred:", e$message))
+    tryCatch({
+      # Send to Google Sheets 
+      sheet_id <- "19cbvKPdMlg7vr9XBNZsVdkbsrQl0nETpatpcJW2_9nU"
+      sheet_append(sheet_id, user_responses)
+      
+      # Generate report
+      report(generate_report(user_responses))
+      
+      shinyjs::hide("loading")
+      
+      # Enable the download button
+      output$downloadButton <- renderUI({
+        downloadButton("downloadReport", "Download Your Report")
       })
+      
+      # Update the submit button text
+      shinyjs::html("submit", "Report Generated")
+      
+    }, error = function(e) {
+      # Remove the output$thankYou line since it's not defined
+      shinyjs::enable("submit")
+      shinyjs::html("submit", "Submit")
+      shinyjs::removeClass("submit", "disabled-button")
+      shinyjs::alert(paste("An error occurred:", e$message))
+    })
     }
   })
   
