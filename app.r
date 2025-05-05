@@ -679,7 +679,7 @@ server <- function(input, output, session) {
         }
       })
     })
-  })
+  }
 
 observeEvent(input$submit, {
     # Disable the submit button and update its text
@@ -964,7 +964,7 @@ observeEvent(input$submit, {
       file.copy(report(), file)
     }
   )
-}
+
 
 # Helper function to generate report
 generate_report <- function(user_responses) {
