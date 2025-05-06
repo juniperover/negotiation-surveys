@@ -1,0 +1,38 @@
+/* SVO slider styles */
+.svo-container {
+  margin: 30px 0;
+  position: relative;
+}
+.svo-slider-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 40px;
+}
+.svo-labels {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: 10px 0;
+  font-weight: bold;
+  font-size: 16px;
+}
+.svo-top-label {
+  margin-top: 10px;
+}
+.svo-bottom-label {
+  margin-bottom: 10px;
+}
+.svo-values {
+  width: 100%;
+  margin-bottom: 10px;
+}
+.svo-values table {
+  width: 100%;
+}
+.svo-instructions {
+  background-color: #f8f9fa;
+  border-left: 4px solid #007bff;
+  padding: 15px;
+  margin-bottom: 20px;
+}
