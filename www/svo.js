@@ -40,12 +40,12 @@ function updateSVOValues(item, value) {
   const valuesContainer = document.getElementById('svo_values_' + item);
   valuesContainer.innerHTML = '';
   
-  // Create table for alignment
+  // Create table without labels - just the values and ticks
   const table = document.createElement('table');
   table.style.width = '100%';
   table.style.borderCollapse = 'collapse';
   
-  // Create top row for "You Receive" values
+  // Create top row for self values
   const topRow = document.createElement('tr');
   
   // Add cells for each value
@@ -85,7 +85,7 @@ function updateSVOValues(item, value) {
     middleRow.appendChild(cell);
   }
   
-  // Create bottom row for "Other Receives" values
+  // Create bottom row for other values
   const bottomRow = document.createElement('tr');
   
   // Add cells for each value
