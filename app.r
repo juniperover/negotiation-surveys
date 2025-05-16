@@ -22,6 +22,18 @@ setwd(this.path::here())
 key_path <- Sys.getenv("google_sheets_key", "")
 if (key_path == "") {
   stop("Google Sheets key environment variable not found")
+    } else {
+        # Add debugging output
+    message("Google Sheets key found at: ", key_path)
+    
+    # Try to authenticate with the key
+    tryCatch({
+      gs4_auth(path = key_path)
+      message("Google Sheets authentication successful")
+    }, error = function(e) {
+      message("Google Sheets authentication error: ", e$message)
+      stop("Failed to authenticate with Google Sheets key")
+    })
 }
 
 # Define UI
