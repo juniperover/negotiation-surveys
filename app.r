@@ -199,13 +199,13 @@ ui <- fluidPage(
   ),
   
   fluidRow(
-    column(8, titlePanel("Negotiation Behavior Inventory")),
+    column(8, titlePanel("Negotiation Behaviour Inventory")),
     column(4, tags$img(src = "mbslogo.jpg", height = "100px", style = "float:right;"))
   ),
   
   # Add the preamble
   wellPanel(
-    HTML("<p>We ask you to reflect on your behaviors during negotiations in which you were personally involved. We define the term 'negotiation' in a broad sense. In addition to events commonly thought to involve negotiation, like negotiating a job offer or making a purchase, negotiation can involve attempts to obtain co-operation from others, settle a dispute, resolve legal issues, or convincing someone to follow your plan of action.</p>")
+    HTML("<p>We ask you to reflect on your behaviours during negotiations in which you were personally involved. We define the term 'negotiation' in a broad sense. In addition to events commonly thought to involve negotiation, such as negotiating a job offer or making a purchase, negotiation can involve attempts to obtain cooperation from others, settle a dispute, resolve legal issues, or convince someone to follow your plan of action.</p>")
   ),
   
 sidebarLayout(
@@ -226,15 +226,15 @@ sidebarLayout(
   ),
   
   mainPanel(
-    h4("Reflecting on how you negotiated in the past, to what extent would you do the following behaviors before a negotiation?"),
-    h4("Each of the behaviors below are things people can do to prepare for a negotiation."),
+    h4("Reflecting on how you negotiated in the past, to what extent would you do the following behaviours before a negotiation?"),
+    h4("Each of the behaviours below is something people can do to prepare for a negotiation."),
     
     # Survey items: NPI
     lapply(1:21, function(i) {
               tagList(
           h5(switch(i,
                     "1. Spend time thinking about your counterpart's goals.",
-                    "2. Spend time studying your counterpart's tactics and patterns of behavior in similar situations.",
+                    "2. Spend time studying your counterpart's tactics and patterns of behaviour in similar situations.",
                     "3. Spend time studying the counterpart's emotional state as they enter into negotiations.",
                     "4. Spend time researching if your counterpart might value things differently than you.",
                     "5. Spend time researching the counterpart's point of view on the situation.",
@@ -243,10 +243,10 @@ sidebarLayout(
                     "8. Communicate in advance your intention to negotiate.",
                     "9. Make sure all relevant parties will be included in the negotiation.",
                     "10. Establish a shared perception of the situation that requires resolution.",
-                    "11. Attempt to remove or minimize distractions that could draw attention away from the negotiation.",
+                    "11. Attempt to remove or minimise distractions that could draw attention away from the negotiation.",
                     "12. Spend time researching the events leading to the negotiation.",
                     "13. Spend time thinking about your goals.",
-                    "14. Prioritize the goals for the negotiation.",
+                    "14. Prioritise the goals for the negotiation.",
                     "15. Create a table or list of what you value most to what you value least.",
                     "16. Ensure that you have the necessary resources to follow through with the deal that you reach.",
                     "17. Maintain competence in the skills needed to analyze the deal (e.g., technical evaluation, accounting, developing relationships, etc.).",
@@ -278,14 +278,14 @@ sidebarLayout(
         )
     }),
     
-    h4("Reflecting on how you negotiated in the past, to what extent would you do the following behaviors during a negotiation?"),
-    h4("Each of the behaviors are things people can do during a negotiation."),
+    h4("Reflecting on how you negotiated in the past, to what extent would you do the following behaviours during a negotiation?"),
+    h4("Each of the behaviours is something people can do during a negotiation."),
     
     # During negotiation survey items
     lapply(1:26, function(i) {
       tagList(
           h5(switch(i,
-                    "1. Have plans in advance to deal with counterproductive (e.g., negative, extreme, irrational) behavior from your counterpart.",
+                    "1. Have plans in advance to deal with counterproductive (e.g., negative, extreme, irrational) behaviour from your counterpart.",
                     "2. Ask questions to learn about your counterpart.",
                     "3. Test your understanding of what your counterpart was trying to say by repeating what they said.",
                     "4. Try to focus on satisfying your underlying needs rather than a specific list of requirements.",
@@ -335,9 +335,9 @@ sidebarLayout(
         )
     }),
     
-    # New section for after negotiation behaviors
-    h4("Reflecting on how you negotiated in the past, to what extent would you do the following behaviors following a negotiation?"),
-    h4("Each of the behaviors are things people can do after reaching an agreement."),
+    # New section for after negotiation behaviours
+    h4("Reflecting on how you negotiated in the past, to what extent would you do the following behaviours following a negotiation?"),
+    h4("Each of the behaviours is something people can do after reaching an agreement."),
     
     # After negotiation survey items
     lapply(1:8, function(i) {
@@ -377,7 +377,7 @@ sidebarLayout(
     
     # Need for Closure Scale
     h4("Need for Closure Scale"),
-    h4("Please indicate the extent to which you agree or disagree with each of the following statements."),
+    h4("Please indicate the extent to which you agree or disagree with each of the following statements as descriptions of your preferences or personality."),
     
     # Survey items for Need for Closure
     lapply(1:15, function(i) {
@@ -472,11 +472,11 @@ sidebarLayout(
     # SVO Scale
     h4("Social Value Orientation"),
     div(class = "svo-instructions",
-        HTML("<p>For this section, imagine you have been randomly paired with another person, whom we will refer to as the other. 
-              This other person is someone you do not know and will remain mutually anonymous. All of your choices are completely confidential.</p>
-              <p>You will be making a series of decisions about allocating resources between you and this other person. 
+        HTML("<p>For this section, imagine you have been randomly paired with another person, whom we will refer to as the Other. 
+              This Other person is someone you do not know and will remain mutually anonymous. All of your choices are completely confidential.</p>
+              <p>You will be making a series of decisions about allocating resources between you and the Other. 
               For each of the following questions, please indicate the distribution you prefer most by moving the slider to your preferred position.</p>
-              <p>Assume that your decisions would yield money for both yourself and the other person (not really, for course purposes, but answer as if it would). There are no right or wrong answers; 
+              <p>Assume that your decisions would yield money for both yourself and the Other (not really, for course purposes, but answer as if it would). There are no right or wrong answers; 
               this is all about personal preferences. </p>")
     ),
     
@@ -522,7 +522,7 @@ sidebarLayout(
     }),
     
     # Add the submit button and download section
-    tags$p("Click the 'Submit' button below. It will save your responses and after a few seconds, you will get a download link to your individualized feedback report below."),
+    tags$p("Click the 'Submit' button below. It will save your responses and after a few seconds, you will get a download link to your individualised feedback report below."),
     
     div(class = "button-container",
         actionButton("submit", "Submit"),
