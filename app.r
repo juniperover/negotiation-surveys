@@ -333,8 +333,8 @@ sidebarLayout(
              tags$p("Processing your responses and generating report. Please wait...")
     )
   )  # This closes mainPanel
-),  # This closes sidebarLayout
-#)  # This closes the fluidPage
+)  # This closes sidebarLayout
+)  # This closes fluidPage
 
 # Server logic
 server <- function(input, output, session) {
@@ -844,4 +844,3 @@ generate_report <- function(user_responses) {
 
 # Run the application 
 shinyApp(ui = ui, server = server)
-
