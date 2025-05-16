@@ -223,7 +223,7 @@ ui <- fluidPage(
         condition = "input.gender == 'Prefer to self-identify'",
         textInput("gender_self", "Please specify:")
       )
-    ),
+    )),
     
     mainPanel(
       h4("Reflecting on how you negotiated in the past, to what extent would you do the following behaviors before a negotiation?"),
@@ -519,7 +519,7 @@ ui <- fluidPage(
               )
             )
           )
-        }),
+        })),
 
 # Server logic
 server <- function(input, output, session) {
