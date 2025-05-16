@@ -480,46 +480,61 @@ ui <- fluidPage(
                 this is all about personal preferences. </p>")
       ),
       
-        # SVO Slider items with corrected structure
-        lapply(1:6, function(i) {
-          tagList(
-            h5(paste("SVO Item", i)),
-            
-            # Define the self/other values for each slider position
-            tags$div(class = "svo-slider-container",
-              # First the top label
-              tags$div(class = "svo-labels svo-top-label",
-                      tags$div(class = "svo-label", "You Receive")
-              ),
-              
-              # Then the values display
-              tags$div(id = paste0("svo_values_", i), class = "svo-values"),
-              
-              # Then the slider
-              sliderInput(
-                inputId = paste0("svo", i),
-                label = NULL,
-                min = 1,
-                max = 9,
-                value = 5,
-                step = 1,
-                width = "100%",
-                ticks = FALSE
-              ),
-              
-              # Then the bottom label
-              tags$div(class = "svo-labels svo-bottom-label",
-                      tags$div(class = "svo-label", "Other Receives")
-              ),
-              
-              # Hidden inputs to store the actual values
-              tags$div(style = "display: none;",
-                      textInput(paste0("svo", i, "_self_value"), NULL, ""),
-                      textInput(paste0("svo", i, "_other_value"), NULL, "")
-              )
-            )
-          )
-        })),
+# SVO Slider items with corrected structure
+lapply(1:6, function(i) {
+  tagList(
+    h5(paste("SVO Item", i)),
+    
+    # Define the self/other values for each slider position
+    tags$div(class = "svo-slider-container",
+      # First the top label
+      tags$div(class = "svo-labels svo-top-label",
+              tags$div(class = "svo-label", "You Receive")
+      ),
+      
+      # Then the values display
+      tags$div(id = paste0("svo_values_", i), class = "svo-values"),
+      
+      # Then the slider
+      sliderInput(
+        inputId = paste0("svo", i),
+        label = NULL,
+        min = 1,
+        max = 9,
+        value = 5,
+        step = 1,
+        width = "100%",
+        ticks = FALSE
+      ),
+      
+      # Then the bottom label
+      tags$div(class = "svo-labels svo-bottom-label",
+              tags$div(class = "svo-label", "Other Receives")
+      ),
+      
+      # Hidden inputs to store the actual values
+      tags$div(style = "display: none;",
+              textInput(paste0("svo", i, "_self_value"), NULL, ""),
+              textInput(paste0("svo", i, "_other_value"), NULL, "")
+      )
+    )
+  )
+}),  # Comma added here
+
+# Add the submit button and download section
+tags$p("Click the 'Submit' button below. It will save your responses and after a few seconds, you will get a download link to your individualized feedback report below."),
+
+div(class = "button-container",
+    actionButton("submit", "Submit"),
+    uiOutput("downloadButton")
+),
+
+tags$div(id = "loading", style = "display: none;",
+         tags$p("Processing your responses and generating report. Please wait...")
+)
+    )  # This closes the mainPanel
+  )  # This closes the sidebarLayout
+#)  # This closes the fluidPage
 
 # Server logic
 server <- function(input, output, session) {
