@@ -18,11 +18,90 @@ library(tidyr)
 
 setwd(this.path::here())
 
-# Use environment variable to authenticate
-key_path <- Sys.getenv("google_sheets_key", "")
-if (key_path == "") {
-  stop("Google Sheets key environment variable not found")
+# More robust Google Sheets authentication
+# First check if the package is loaded
+if (!requireNamespace("googlesheets4", quietly = TRUE)) {
+  stop("The googlesheets4 package is not available. Please install it.")
 }
+
+# Log authentication attempt
+message("Starting Google Sheets authentication process...")
+
+# Try different authentication methods
+auth_successful <- FALSE
+
+# Method 1: Try environment variable with key path
+key_path <- Sys.getenv("google_sheets_key", "")
+if (key_path != "") {
+  message("Found google_sheets_key environment variable")
+  
+  # Check if it's a file path or JSON content
+  if (file.exists(key_path)) {
+    message("Key appears to be a file path")
+    tryCatch({
+      googlesheets4::gs4_auth(path = key_path)
+      message("Successfully authenticated with key file")
+      auth_successful <- TRUE
+    }, error = function(e) {
+      message("Error authenticating with key file: ", e$message)
+    })
+  } else if (grepl("^\\s*\\{", key_path)) {
+    # Looks like JSON content
+    message("Key appears to be JSON content")
+    tryCatch({
+      temp_key_file <- tempfile(fileext = ".json")
+      writeLines(key_path, temp_key_file)
+      googlesheets4::gs4_auth(path = temp_key_file)
+      message("Successfully authenticated with JSON content")
+      auth_successful <- TRUE
+    }, error = function(e) {
+      message("Error authenticating with JSON content: ", e$message)
+    })
+  } else {
+    message("Key environment variable exists but doesn't appear to be a file or JSON content")
+  }
+}
+
+# Method 2: Try token-based authentication if available
+if (!auth_successful) {
+  message("Trying token-based authentication...")
+  tryCatch({
+    googlesheets4::gs4_auth()
+    message("Successfully authenticated with token")
+    auth_successful <- TRUE
+  }, error = function(e) {
+    message("Error authenticating with token: ", e$message)
+  })
+}
+
+# Method 3: Try deauthentication (for public sheets)
+if (!auth_successful) {
+  message("Trying to deauthenticate (for public sheets)...")
+  tryCatch({
+    googlesheets4::gs4_deauth()
+    message("Successfully deauthenticated (for public sheets)")
+    auth_successful <- TRUE
+  }, error = function(e) {
+    message("Error deauthenticating: ", e$message)
+  })
+}
+
+# If all authentication methods fail, stop the app
+if (!auth_successful) {
+  stop("Failed to authenticate with Google Sheets. Please check your credentials.")
+}
+
+# Test the authentication by listing sheets (optional)
+tryCatch({
+  sheet_id <- "19cbvKPdMlg7vr9XBNZsVdkbsrQl0nETpatpcJW2_9nU"
+  sheet_properties <- googlesheets4::gs4_get(sheet_id)
+  message("Successfully connected to sheet: ", sheet_properties$name)
+}, error = function(e) {
+  message("Error connecting to sheet: ", e$message)
+  # Don't stop here, as the sheet might not exist yet
+})
+
+message("Google Sheets authentication process completed")
 
 # Define UI
 ui <- fluidPage(
