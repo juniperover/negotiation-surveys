@@ -31,7 +31,7 @@ message("Starting Google Sheets authentication process...")
 auth_successful <- FALSE
 
 # Method 1: Try environment variable with key path
-key_path <- Sys.getenv("google_sheets_key", "")
+key_path <- Sys.getenv("new_google_key", "")
 if (key_path != "") {
   message("Found google_sheets_key environment variable")
   
