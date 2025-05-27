@@ -695,326 +695,57 @@ server <- function(input, output, session) {
     }
   })
   
-  # Define downloadReport handler
-  output$downloadReport <- downloadHandler(
-    filename = function() {
-      paste0("report_", gsub("[^[:alnum:]]", "_", input$name), ".pdf")
-    },
-    content = function(file) {
-      file.copy(report(), file)
-    }
-  )
-  
-  observeEvent(input$submit, {
-    # Disable the submit button and update its text
-    shinyjs::disable("submit")
-    shinyjs::html("submit", "Generating your report, please wait...")
-    shinyjs::addClass("submit", "disabled-button")
+# Define downloadReport handler
+output$downloadReport <- downloadHandler(
+  filename = function() {
+    paste("negotiation-report-", Sys.Date(), ".html", sep = "")
+  },
+  content = function(file) {
+    # Copy the report file to a temporary directory
+    tempReport <- file.path(tempdir(), "report_template.Rmd")
+    file.copy("report_template.Rmd", tempReport, overwrite = TRUE)
     
-    # Check if name and email are filled
-    name_filled <- nzchar(input$name)
-    email_filled <- nzchar(input$email)
-    
-    if (!name_filled) {
-      shinyjs::html("name_error", "Please enter your name.")
-    } else {
-      shinyjs::html("name_error", "")
+    # Copy any assets (like images) to temp directory
+    if(file.exists("www/mbslogo.jpg")) {
+      dir.create(file.path(tempdir(), "www"), showWarnings = FALSE)
+      file.copy("www/mbslogo.jpg", file.path(tempdir(), "www/mbslogo.jpg"), overwrite = TRUE)
     }
     
-    if (!email_filled || !is_valid_email(input$email)) {
-      shinyjs::html("email_error", "Please enter a valid email address.")
-    } else {
-      shinyjs::html("email_error", "")
-    }
+    # Generate the report data
+    # report_data <- generate_report(user_responses)
+    # The report will be generated when the download button is clicked
+    # No need to call generate_report here anymore
     
-    # Check if all questions are answered
-    unanswered <- c(
-      sapply(1:21, function(i) { is.null(input[[paste0("plan", i)]]) }),
-      sapply(1:26, function(i) { is.null(input[[paste0("barg", i)]]) }),
-      sapply(1:8, function(i) { is.null(input[[paste0("post", i)]]) }),
-      sapply(1:15, function(i) { is.null(input[[paste0("nfc", i)]]) }),  # NFC questions
-      sapply(1:18, function(i) { is.null(input[[paste0("ncs", i)]]) })   # NCS questions
-      # SVO questions are handled by sliders with defaults, so they're always answered
-    )
-    
-    if (any(unanswered) || !name_filled || !email_filled) {
-      # If any question is unanswered or name/email is missing, show an alert
-      shinyjs::alert("Please complete all required fields and answer all questions before submitting.")
-      shinyjs::enable("submit")
-      shinyjs::html("submit", "Submit")
-      shinyjs::removeClass("submit", "disabled-button")
-    } else {
-      # All questions are answered and name/email are filled, proceed with submission
+    tryCatch({
+      message("Starting report generation...")
       
-      # Get SVO values from hidden inputs
-      svo_self_values <- c(
-        as.numeric(input$svo1_self_value),
-        as.numeric(input$svo2_self_value),
-        as.numeric(input$svo3_self_value),
-        as.numeric(input$svo4_self_value),
-        as.numeric(input$svo5_self_value),
-        as.numeric(input$svo6_self_value)
-      )
+      rmarkdown::render(tempReport, 
+                      output_file = file, 
+                      params = list(
+                        name = user_responses$Name,
+                        df = report_data$df,
+                        planning_items = report_data$planning_items,
+                        bargaining_items = report_data$bargaining_items,
+                        implementation_items = report_data$implementation_items,
+                        nfc_items = report_data$nfc_items,
+                        ncs_items = report_data$ncs_items,
+                        svo_angle = user_responses$SVO_angle,
+                        svo_type = report_data$svo_type_label,
+                        svo_items = report_data$svo_items
+                      ),
+                      envir = new.env(parent = globalenv()))
       
-      svo_other_values <- c(
-        as.numeric(input$svo1_other_value),
-        as.numeric(input$svo2_other_value),
-        as.numeric(input$svo3_other_value),
-        as.numeric(input$svo4_other_value),
-        as.numeric(input$svo5_other_value),
-        as.numeric(input$svo6_other_value)
-      )
+      message("Report generated successfully!")
       
-      # Get gender value (handle self-identified)
-      gender_value <- input$gender
-      if (gender_value == "Prefer to self-identify" && !is.null(input$gender_self) && nzchar(input$gender_self)) {
-        gender_value <- paste("Self-identified:", input$gender_self)
-      }
-      
-      # Create response data frame
-      user_responses <- data.frame(
-        Timestamp = Sys.time(),
-        Name = input$name,
-        Email = input$email,
-        Age = input$age,
-        Gender = gender_value,
-        Plan1 = as.numeric(input$plan1),
-        Plan2 = as.numeric(input$plan2),
-        Plan3 = as.numeric(input$plan3),
-        Plan4 = as.numeric(input$plan4),
-        Plan5 = as.numeric(input$plan5),
-        Plan6 = as.numeric(input$plan6),
-        Plan7 = as.numeric(input$plan7),
-        Plan8 = as.numeric(input$plan8),
-        Plan9 = as.numeric(input$plan9),
-        Plan10 = as.numeric(input$plan10),
-        Plan11 = as.numeric(input$plan11),
-        Plan12 = as.numeric(input$plan12),
-        Plan13 = as.numeric(input$plan13),
-        Plan14 = as.numeric(input$plan14),
-        Plan15 = as.numeric(input$plan15),
-        Plan16 = as.numeric(input$plan16),
-        Plan17 = as.numeric(input$plan17),
-        Plan18 = as.numeric(input$plan18),
-        Plan19 = as.numeric(input$plan19),
-        Plan20 = as.numeric(input$plan20),
-        Plan21 = as.numeric(input$plan21),
-        Barg1 = as.numeric(input$barg1),
-        Barg2 = as.numeric(input$barg2),
-        Barg3 = as.numeric(input$barg3),
-        Barg4 = as.numeric(input$barg4),
-        Barg5 = as.numeric(input$barg5),
-        Barg6 = as.numeric(input$barg6),
-        Barg7 = as.numeric(input$barg7),
-        Barg8 = as.numeric(input$barg8),
-        Barg9 = as.numeric(input$barg9),
-        Barg10 = as.numeric(input$barg10),
-        Barg11 = as.numeric(input$barg11),
-        Barg12 = as.numeric(input$barg12),
-        Barg13 = as.numeric(input$barg13),
-        Barg14 = as.numeric(input$barg14),
-        Barg15 = as.numeric(input$barg15),
-        Barg16 = as.numeric(input$barg16),
-        Barg17 = as.numeric(input$barg17),
-        Barg18 = as.numeric(input$barg18),
-        Barg19 = as.numeric(input$barg19),
-        Barg20 = as.numeric(input$barg20),
-        Barg21 = as.numeric(input$barg21),
-        Barg22 = as.numeric(input$barg22),
-        Barg23 = as.numeric(input$barg23),
-        Barg24 = as.numeric(input$barg24),
-        Barg25 = as.numeric(input$barg25),
-        Barg26 = as.numeric(input$barg26),
-        Post1 = as.numeric(input$post1),
-        Post2 = as.numeric(input$post2),
-        Post3 = as.numeric(input$post3),
-        Post4 = as.numeric(input$post4),
-        Post5 = as.numeric(input$post5),
-        Post6 = as.numeric(input$post6),
-        Post7 = as.numeric(input$post7),
-        Post8 = as.numeric(input$post8),
-        # Add Need for Closure fields
-        NFC1 = as.numeric(input$nfc1),
-        NFC2 = as.numeric(input$nfc2),
-        NFC3 = as.numeric(input$nfc3),
-        NFC4 = as.numeric(input$nfc4),
-        NFC5 = as.numeric(input$nfc5),
-        NFC6 = as.numeric(input$nfc6),
-        NFC7 = as.numeric(input$nfc7),
-        NFC8 = as.numeric(input$nfc8),
-        NFC9 = as.numeric(input$nfc9),
-        NFC10 = as.numeric(input$nfc10),
-        NFC11 = as.numeric(input$nfc11),
-        NFC12 = as.numeric(input$nfc12),
-        NFC13 = as.numeric(input$nfc13),
-        NFC14 = as.numeric(input$nfc14),
-        NFC15 = as.numeric(input$nfc15),
-        # Add Need for Cognition fields
-        NCS1 = as.numeric(input$ncs1),
-        NCS2 = as.numeric(input$ncs2),
-        NCS3 = as.numeric(input$ncs3),
-        NCS4 = as.numeric(input$ncs4),
-        NCS5 = as.numeric(input$ncs5),
-        NCS6 = as.numeric(input$ncs6),
-        NCS7 = as.numeric(input$ncs7),
-        NCS8 = as.numeric(input$ncs8),
-        NCS9 = as.numeric(input$ncs9),
-        NCS10 = as.numeric(input$ncs10),
-        NCS11 = as.numeric(input$ncs11),
-        NCS12 = as.numeric(input$ncs12),
-        NCS13 = as.numeric(input$ncs13),
-        NCS14 = as.numeric(input$ncs14),
-        NCS15 = as.numeric(input$ncs15),
-        NCS16 = as.numeric(input$ncs16),
-        NCS17 = as.numeric(input$ncs17),
-        NCS18 = as.numeric(input$ncs18),
-        # Add SVO values
-        SVO1 = as.numeric(input$svo1),
-        SVO2 = as.numeric(input$svo2),
-        SVO3 = as.numeric(input$svo3),
-        SVO4 = as.numeric(input$svo4),
-        SVO5 = as.numeric(input$svo5),
-        SVO6 = as.numeric(input$svo6),
-        # Store the actual self/other values as well
-        SVO1_Self = svo_self_values[1],
-        SVO1_Other = svo_other_values[1],
-        SVO2_Self = svo_self_values[2],
-        SVO2_Other = svo_other_values[2],
-        SVO3_Self = svo_self_values[3],
-        SVO3_Other = svo_other_values[3],
-        SVO4_Self = svo_self_values[4],
-        SVO4_Other = svo_other_values[4],
-        SVO5_Self = svo_self_values[5],
-        SVO5_Other = svo_other_values[5],
-        SVO6_Self = svo_self_values[6],
-        SVO6_Other = svo_other_values[6]
-      )
-      
-      # Calculate summary scores
-      user_responses <- user_responses %>%
-        mutate(
-          # First make sure all NCS items are numeric
-        NCS1 = as.numeric(as.character(NCS1)),
-        NCS2 = as.numeric(as.character(NCS2)),
-        NCS3 = as.numeric(as.character(NCS3)),
-        NCS4 = as.numeric(as.character(NCS4)),
-        NCS5 = as.numeric(as.character(NCS5)),
-        NCS6 = as.numeric(as.character(NCS6)),
-        NCS7 = as.numeric(as.character(NCS7)),
-        NCS8 = as.numeric(as.character(NCS8)),
-        NCS9 = as.numeric(as.character(NCS9)),
-        NCS10 = as.numeric(as.character(NCS10)),
-        NCS11 = as.numeric(as.character(NCS11)),
-        NCS12 = as.numeric(as.character(NCS12)),
-        NCS13 = as.numeric(as.character(NCS13)),
-        NCS14 = as.numeric(as.character(NCS14)),
-        NCS15 = as.numeric(as.character(NCS15)),
-        NCS16 = as.numeric(as.character(NCS16)),
-        NCS17 = as.numeric(as.character(NCS17)),
-        NCS18 = as.numeric(as.character(NCS18)),
-          pre_count = rowMeans(select(., Plan1:Plan5), na.rm = TRUE),
-          pre_arena = rowMeans(select(., Plan6:Plan12), na.rm = TRUE),
-          pre_preps = rowMeans(select(., Plan13:Plan17), na.rm = TRUE),
-          pre_imp = rowMeans(select(., Plan18:Plan19), na.rm = TRUE),
-          pre = rowMeans(select(., Plan1:Plan19), na.rm = TRUE),
-          barg_mut = rowMeans(select(., Barg1:Barg6), na.rm = TRUE),
-          barg_com = rowMeans(select(., Barg7:Barg9), na.rm = TRUE),
-          barg_arg = rowMeans(select(., Barg13, Barg12, Barg15, Barg18, Barg11, Barg17, Barg16, Barg14), na.rm = TRUE),
-          barg_get = rowMeans(select(., Barg25, Barg21, Barg22, Barg19, Barg26, Barg23, Barg20, Barg24), na.rm = TRUE),
-          barg = rowMeans(select(., Barg1:Barg9, Barg13, Barg12, Barg15, Barg18, Barg11, Barg17, Barg16, Barg14, Barg25, Barg21, Barg22, Barg19, Barg26, Barg23, Barg20, Barg24), na.rm = TRUE),
-          imp_imp = rowMeans(select(., Post1:Post3), na.rm = TRUE),
-          imp_feedb = rowMeans(select(., Post5, Post6), na.rm = TRUE),
-          imp = rowMeans(select(., Post1:Post3, Post5, Post6), na.rm = TRUE),
-          nfc_order = rowMeans(select(., NFC3, NFC12, NFC13), na.rm = TRUE),
-          nfc_predictability = rowMeans(select(., NFC6, NFC10, NFC15), na.rm = TRUE),
-          nfc_decisiveness = rowMeans(select(., NFC7, NFC8, NFC9), na.rm = TRUE),
-          nfc_ambiguity = rowMeans(select(., NFC1, NFC2, NFC4, NFC11), na.rm = TRUE),
-          nfc_closemindedness = rowMeans(select(., NFC5, NFC14), na.rm = TRUE),
-          nfc_total = rowMeans(select(., NFC1:NFC15), na.rm = TRUE),
-          # Reverse score the NCS negative items (3, 4, 5, 7, 8, 9, 12, 16, 17)
-          # Then calculate the reversed items
-        NCS3_rev = 6 - as.numeric(as.character(NCS3)),
-        NCS4_rev = 6 - as.numeric(as.character(NCS4)),
-        NCS5_rev = 6 - as.numeric(as.character(NCS5)),
-        NCS7_rev = 6 - as.numeric(as.character(NCS7)),
-        NCS8_rev = 6 - as.numeric(as.character(NCS8)),
-        NCS9_rev = 6 - as.numeric(as.character(NCS9)),
-        NCS12_rev = 6 - as.numeric(as.character(NCS12)),
-        NCS16_rev = 6 - as.numeric(as.character(NCS16)),
-        NCS17_rev = 6 - as.numeric(as.character(NCS17)),
-          # Need for Cognition summary score (using reversed items where appropriate)
-          ncs_total = mean(c(
-          as.numeric(as.character(NCS1)), 
-          as.numeric(as.character(NCS2)), 
-          NCS3_rev, 
-          NCS4_rev, 
-          NCS5_rev, 
-          as.numeric(as.character(NCS6)), 
-          NCS7_rev, 
-          NCS8_rev, 
-          NCS9_rev, 
-          as.numeric(as.character(NCS10)), 
-          as.numeric(as.character(NCS11)), 
-          NCS12_rev, 
-          as.numeric(as.character(NCS13)), 
-          as.numeric(as.character(NCS14)), 
-          as.numeric(as.character(NCS15)), 
-          NCS16_rev, 
-          NCS17_rev, 
-          as.numeric(as.character(NCS18))
-          ), na.rm = TRUE),          
-          # SVO calculations based on the scoring syntax
-          # Calculate mean values for self and other across the first six items
-          SVO_mean_first_six_Items_Self = rowMeans(select(., SVO1_Self, SVO2_Self, SVO3_Self, 
-                                                 SVO4_Self, SVO5_Self, SVO6_Self), na.rm = TRUE),
-          SVO_mean_first_six_Items_Other = rowMeans(select(., SVO1_Other, SVO2_Other, SVO3_Other, 
-                                                   SVO4_Other, SVO5_Other, SVO6_Other), na.rm = TRUE),
-          
-          # Calculate SVO angle according to the formula
-          SVO_angle = (atan((SVO_mean_first_six_Items_Other - 50) / 
-                           (SVO_mean_first_six_Items_Self - 50)) * 180) / pi,
-          
-          # Categorize the SVO angle into types
-          SVO_type = case_when(
-            SVO_angle <= -12.04 ~ 1, # competitive
-            SVO_angle > -12.04 & SVO_angle <= 22.45 ~ 2, # individualistic
-            SVO_angle > 22.45 & SVO_angle <= 57.15 ~ 3, # prosocial
-            SVO_angle > 57.15 ~ 4, # altruistic
-            TRUE ~ NA_real_
-          )
-        )
-      
-      shinyjs::show("loading")
-      
-      tryCatch({
-        # Send to Google Sheets 
-        sheet_id <- "19cbvKPdMlg7vr9XBNZsVdkbsrQl0nETpatpcJW2_9nU"
-        sheet_append(sheet_id, user_responses)
-        
-        # Generate report
-        report(generate_report(user_responses))
-        
-        shinyjs::hide("loading")
-        
-        # Update the submit button text
-        shinyjs::html("submit", "Report Generated")
-        
-      }, error = function(e) {
-        # Show error alert
-        shinyjs::alert(paste("An error occurred:", e$message))
-        
-        # Re-enable the submit button
-        shinyjs::enable("submit")
-        shinyjs::html("submit", "Submit")
-        shinyjs::removeClass("submit", "disabled-button")
-        shinyjs::hide("loading")
-      })
-    }
-  })
-}
+    }, error = function(e) {
+      message("Error generating report: ", e$message)
+      print(e)
+      writeLines(paste("Error generating report:", e$message), file)
+    })
+  }
+)
 
-
-# Helper function to generate report
+# Updated generate_report function that returns the data
 generate_report <- function(user_responses) {
   # Define benchmarks
   benchmarks <- data.frame(
@@ -1079,9 +810,6 @@ generate_report <- function(user_responses) {
     )
   )
   
-  # Convert user_responses to a list if it's not already
-  user_responses_list <- as.list(user_responses)
-  
   # Create separate lists for planning, bargaining, and implementation items
   planning_items <- user_responses %>%
     select(starts_with("Plan")) %>%
@@ -1129,33 +857,17 @@ generate_report <- function(user_responses) {
   # Merge with benchmarks
   df <- merge(summary_scores, benchmarks, by = "Category")
   
-  # Render the Rmd template
-  report_path <- tempfile(fileext = ".pdf")
-  message("Report path: ", report_path)
-  
-  tryCatch({
-    # Update the render call
-    rmarkdown::render("report_template.Rmd", 
-                    output_file = report_path, 
-                    params = list(
-                      name = user_responses$Name,
-                      df = df,
-                      planning_items = planning_items,
-                      bargaining_items = bargaining_items,
-                      implementation_items = implementation_items,
-                      nfc_items = nfc_items,      # Add NFC items
-                      ncs_items = ncs_items,      # Add NCS items
-                      svo_angle = user_responses$SVO_angle,
-                      svo_type = svo_type_label,  # Add SVO type label
-                      svo_items = svo_items       # Add SVO items data
-                    ))
-    message("Report generated successfully.")
-  }, error = function(e) {
-    message("Error generating report: ", e$message)
-  })
-  
-  return(report_path)
+  # RETURN THE DATA (this was missing!)
+  return(list(
+    df = df,
+    planning_items = planning_items,
+    bargaining_items = bargaining_items,
+    implementation_items = implementation_items,
+    nfc_items = nfc_items,
+    ncs_items = ncs_items,
+    svo_type_label = svo_type_label,
+    svo_items = svo_items
+  ))
 }
-
 # Run the application 
 shinyApp(ui = ui, server = server)
