@@ -12,98 +12,26 @@ params:
   svo_type: NA
   svo_items: NA
 output:
-  html_document:
-    theme: flatly
-    toc: true
-    toc_float: true
-    css: "custom.css"
+  pdf_document:
+classoption: a4paper
+header-includes:
+    - \usepackage{fancyhdr}
+    - \usepackage[utf8]{inputenc}
+geometry: margin = 1in
 ---
 
-<style>
-body {
-  font-family: Arial, sans-serif;
-  margin: 20px;
-}
-
-.header-logo {
-  text-align: left;
-  margin-bottom: 20px;
-}
-
-.header-logo img {
-  height: 60px;
-}
-
-h1 {
-  color: #2c3e50;
-  border-bottom: 2px solid #3498db;
-  padding-bottom: 10px;
-}
-
-h2 {
-  color: #34495e;
-  margin-top: 30px;
-}
-
-h3 {
-  color: #7f8c8d;
-}
-
-.chart-container {
-  margin: 20px 0;
-  text-align: center;
-}
-
-.interpretation-box {
-  background-color: #f8f9fa;
-  border-left: 4px solid #3498db;
-  padding: 15px;
-  margin: 15px 0;
-}
-
-.page-break {
-  page-break-before: always;
-  margin-top: 40px;
-  border-top: 1px solid #ddd;
-  padding-top: 20px;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 15px 0;
-}
-
-table th, table td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
-}
-
-table th {
-  background-color: #f2f2f2;
-  font-weight: bold;
-}
-
-.note-text {
-  font-style: italic;
-  color: #666;
-  font-size: 0.9em;
-  margin: 10px 0;
-}
-</style>
-
-<div class="header-logo">
-<img src="www/mbslogo.jpg" alt="MBS Logo" />
-</div>
+\addtolength{\headheight}{.5cm} 
+\pagestyle{fancyplain} 
+\lhead{\includegraphics[height=1.7cm]{www/mbslogo.jpg}}
+\renewcommand{\headrulewidth}{0pt} 
+\let\oldrule=\rule
+    \renewcommand{\rule}[1]{\oldrule{\linewidth}} 
+\pagenumbering{gobble}
 
 # `r params$name`
 
-This report provides feedback about how you engage in effective negotiation behaviours. It should be a source of reflection on areas where you are performing well, and areas where you can improve. You will also see feedback about three other properties that affect your negotiations: need for closure, need for cognition, and social value orientation. In each section of the report, you can see an explanation of the measure and how you compare with your peers. 
+This report provides feedback about how you engage in effective negotiation behaviours. It should be a source of reflection on areas where you are performing well, and areas where you can improve. You will also see feedback about three other properties that affect your negotiations: need for closure, need for cognition, and social value orientation. In each section of the report, you can see an explanation of the measure and how you compare with your peers. *Note: For the Negotiation Behaviours Inventory, "MBS Participants" refers to the average score of MBS participants. For the other measures, we do not yet have sufficient data to report on MBS responses, so we are using averages derived from prior research. These benchmarks will be updated during this subject and shared with you.*
 
-<div class="note-text">
-<strong>Note:</strong> For the Negotiation Behaviours Inventory, "MBS Participants" refers to the average score of MBS participants. For the other measures, we do not yet have sufficient data to report on MBS responses, so we are using averages derived from prior research. These benchmarks will be updated during this subject and shared with you.
-</div>
 
 ```{r setup, include=FALSE}
 # Load necessary libraries
@@ -120,7 +48,7 @@ library(stringr)
 library(cowplot)
 library(tidyr)
 options(width = 120)
-knitr::opts_chunk$set(comment = NA, echo = FALSE, message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(comment = NA)
 
 # Prep the datasets
 plot_data <- params$df
@@ -135,8 +63,7 @@ ncs_items <- params$ncs_items  # Add this line
 
 The planning aspect of negotiation refers to behaviours that should take place before the first offer is made. 
 
-<div class="chart-container">
-```{r, fig.align='center', fig.width = 8, fig.height = 4}
+```{r, echo = F, fig.align='center', fig.width = 6.4, fig.height = 1, include = T, message = F, fig.margin = T, warning = F, results = 'asis'}
 pre_df <- plot_data[9, ]
 
 pre_long <- pre_df %>%
@@ -144,72 +71,127 @@ pre_long <- pre_df %>%
                names_to = "Measure",
                values_to = "Value")
 
-title <- "Overall planning score"
+title <- str_pad("Overall planning score", width = 40, side=c('right'), pad=' ')
 
 q11 <- ggplot(pre_long, aes(y = Value, x = Measure, fill = factor(Measure))) +
-  geom_bar(stat = "identity") + 
-  theme_minimal() + 
-  ylab("Score") + 
-  xlab("") +
-  ggtitle(title) +
-  theme(legend.position = "none", 
-        plot.title = element_text(hjust = 0.5, size = 14, face = "bold")) + 
-  geom_text(data = pre_long, aes(label = round(Value, 2)), vjust = -0.5) +
+  geom_bar(stat = "identity") + theme_bw() + ylab("") + xlab(title) +
+  theme(legend.position = "none", axis.title.y = element_text(angle=0, hjust = 0, size = 9)) + 
+  geom_text(data = pre_long, aes(label = round(Value, 2), y = 6.5)) +
   scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7), 
-                     limits = c(0, 8)) + 
+  labels=c("1" = "1", "2" = "", "3" = "3", "4" = "", "5" = "5", "6" = "", "7" = "7")) + 
   scale_x_discrete(labels = c("Your_Response" = "You", "Benchmark" = "MBS Participants")) + 
-  scale_fill_manual(values = c("Benchmark" = "grey60", "Your_Response" = "#3498db"))
+  coord_cartesian(ylim=c(1,8)) + scale_fill_manual(values = c("grey60", "Green")) 
+q11 <- q11 + rotate()
 
 q11
 ```
-</div>
 
-## Planning dimensions
+### Planning dimensions
 
-<div class="chart-container">
-```{r, fig.align='center', fig.width = 10, fig.height = 12}
-# Create all four planning dimension charts
-titles <- c(
-  "Efforts to initiate the negotiation and\nto understand the situation",
-  "Understanding the counterpart's\nintentions and behaviours", 
-  "Efforts to understand your needs and\ninterests for the negotiation",
-  "Awareness of what will happen if\nthe negotiation fails"
-)
+```{r, echo = F, fig.align='center', fig.width = 6.4, fig.height = 1, include = T, message = F, fig.margin = T, warning = F, results = 'asis'}
+title <- str_wrap("Efforts to initiate the negotiation and to understand the situation", width = 40)
+title <- unlist(str_split(title, pattern = "\\n", n = Inf, simplify = FALSE), use.names = F)
+title <- str_pad(title, width = 40, side = c("right"), pad = " ")
+title <- paste(title[1], title[2], sep ="\n")
 
-rows <- c(10, 11, 13, 12)
-plots <- list()
+pre_df <- plot_data[10, ]
 
-for(i in 1:4) {
-  pre_df <- plot_data[rows[i], ]
-  
-  pre_long <- pre_df %>%
-    pivot_longer(cols = c(Your_Response, Benchmark),
-                 names_to = "Measure",
-                 values_to = "Value")
-  
-  plot <- ggplot(pre_long, aes(y = Value, x = Measure, fill = factor(Measure))) +
-    geom_bar(stat = "identity") + 
-    theme_minimal() + 
-    ylab("Score") + 
-    xlab("") +
-    ggtitle(titles[i]) +
-    theme(legend.position = "none",
-          plot.title = element_text(hjust = 0.5, size = 12)) + 
-    geom_text(data = pre_long, aes(label = round(Value, 2)), vjust = -0.5) +
-    scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7), 
-                       limits = c(0, 8)) + 
-    scale_x_discrete(labels = c("Your_Response" = "You", "Benchmark" = "MBS Participants")) + 
-    scale_fill_manual(values = c("Benchmark" = "grey60", "Your_Response" = "#3498db"))
-  
-  plots[[i]] <- plot
-}
+pre_long <- pre_df %>%
+  pivot_longer(cols = c(Your_Response, Benchmark),
+               names_to = "Measure",
+               values_to = "Value")
 
-# Arrange plots in a 2x2 grid
-cowplot::plot_grid(plotlist = plots, ncol = 2, nrow = 2)
+q1 <- ggplot(pre_long, aes(y = Value, x = Measure, fill = factor(Measure))) +
+  geom_bar(stat = "identity") + theme_bw() + ylab("") + xlab(title) +
+  theme(legend.position = "none", axis.title.y = element_text(angle=0, hjust = 0, size = 9)) + 
+  geom_text(data = pre_long, aes(label = round(Value, 2), y = 6.5)) +
+  scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7), 
+  labels=c("1" = "1", "2" = "", "3" = "3", "4" = "", "5" = "5", "6" = "", "7" = "7")) + 
+  scale_x_discrete(labels = c("Your_Response" = "You", "Benchmark" = "MBS Participants")) + 
+  coord_cartesian(ylim=c(1,8)) + scale_fill_manual(values = c("grey60", "Green")) 
+q1 <- q1 + rotate()
 ```
-</div>
 
-<div class="page-break"></div>
+```{r, echo = F, fig.align='center', fig.width = 6.4, fig.height = 1, include = T, message = F, fig.margin = T, warning = F, results = 'asis'}
+title <- str_wrap("Understanding the counterpart's intentions and behaviours", width = 40)
+title <- unlist(str_split(title, pattern = "\\n", n = Inf, simplify = FALSE), use.names = F)
+title <- str_pad(title, width = 40, side = c("right"), pad = " ")
+title <- paste(title[1], title[2], sep ="\n")
+
+pre_df <- plot_data[11, ]
+
+pre_long <- pre_df %>%
+  pivot_longer(cols = c(Your_Response, Benchmark),
+               names_to = "Measure",
+               values_to = "Value")
+
+q2 <- ggplot(pre_long, aes(y = Value, x = Measure, fill = factor(Measure))) +
+  geom_bar(stat = "identity") + theme_bw() + ylab("") + xlab(title) +
+  theme(legend.position = "none", axis.title.y = element_text(angle=0, hjust = 0, size = 9)) + 
+  geom_text(data = pre_long, aes(label = round(Value, 2), y = 6.5)) +
+  scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7), 
+  labels=c("1" = "1", "2" = "", "3" = "3", "4" = "", "5" = "5", "6" = "", "7" = "7")) + 
+  scale_x_discrete(labels = c("Your_Response" = "You", "Benchmark" = "MBS Participants")) + 
+  coord_cartesian(ylim=c(1,8)) + scale_fill_manual(values = c("grey60", "Green")) 
+q2 <- q2 + rotate()
+```
+
+```{r, echo = F, fig.align='center', fig.width = 6.4, fig.height = 1, include = T, message = F, fig.margin = T, warning = F, results = 'asis'}
+title <- str_wrap("Efforts to understand your needs and interests for the negotiation", width = 40)
+title <- unlist(str_split(title, pattern = "\\n", n = Inf, simplify = FALSE), use.names = F)
+title <- str_pad(title, width = 40, side = c("right"), pad = " ")
+title <- paste(title[1], title[2], sep ="\n")
+
+pre_df <- plot_data[13, ]
+
+pre_long <- pre_df %>%
+  pivot_longer(cols = c(Your_Response, Benchmark),
+               names_to = "Measure",
+               values_to = "Value")
+
+q3 <- ggplot(pre_long, aes(y = Value, x = Measure, fill = factor(Measure))) +
+  geom_bar(stat = "identity") + theme_bw() + ylab("") + xlab(title) +
+  theme(legend.position = "none", axis.title.y = element_text(angle=0, hjust = 0, size = 9)) + 
+  geom_text(data = pre_long, aes(label = round(Value, 2), y = 6.5)) +
+  scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7), 
+  labels=c("1" = "1", "2" = "", "3" = "3", "4" = "", "5" = "5", "6" = "", "7" = "7")) + 
+  scale_x_discrete(labels = c("Your_Response" = "You", "Benchmark" = "MBS Participants")) + 
+  coord_cartesian(ylim=c(1,8)) + scale_fill_manual(values = c("grey60", "Green")) 
+q3 <- q3 + rotate()
+```
+
+```{r, echo = F, fig.align='center', fig.width = 6.4, fig.height = 1, include = T, message = F, fig.margin = T, warning = F, results = 'asis'}
+title <- str_wrap("Awareness of what will happen if the negotiation fails", width = 40)
+title <- unlist(str_split(title, pattern = "\\n", n = Inf, simplify = FALSE), use.names = F)
+title <- str_pad(title, width = 40, side = c("right"), pad = " ")
+title <- paste(title[1], title[2], sep ="\n")
+
+pre_df <- plot_data[12, ]
+
+pre_long <- pre_df %>%
+  pivot_longer(cols = c(Your_Response, Benchmark),
+               names_to = "Measure",
+               values_to = "Value")
+
+q4 <- ggplot(pre_long, aes(y = Value, x = Measure, fill = factor(Measure))) +
+  geom_bar(stat = "identity") + theme_bw() + ylab("") + xlab(title) +
+  theme(legend.position = "none", axis.title.y = element_text(angle=0, hjust = 0, size = 9)) + 
+  geom_text(data = pre_long, aes(label = round(Value, 2), y = 6.5)) +
+  scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7), 
+  labels=c("1" = "1", "2" = "", "3" = "3", "4" = "", "5" = "5", "6" = "", "7" = "7")) + 
+  scale_x_discrete(labels = c("Your_Response" = "You", "Benchmark" = "MBS Participants")) + 
+  coord_cartesian(ylim=c(1,8)) + scale_fill_manual(values = c("grey60", "Green")) 
+q4 <- q4 + rotate()
+
+pl <- align_plots(q1, q2, q3, q4, align="v")
+
+ggdraw(pl[[1]])
+ggdraw(pl[[2]])
+ggdraw(pl[[3]])
+ggdraw(pl[[4]])
+```
+
+\newpage
 
 # Need for Closure Assessment
 
@@ -217,8 +199,7 @@ This section shows your responses to the Need for Closure scale, which measures 
 
 ## Your Need for Closure Profile
 
-<div class="chart-container">
-```{r nfc_chart, fig.width=10, fig.height=6, fig.align='center'}
+```{r nfc_chart, echo=FALSE, fig.width=8, fig.height=5, fig.align='center'}
 # Create a dataframe for NFC categories
 nfc_df <- plot_data %>% 
   filter(Category %in% c("nfc_order", "nfc_predictability", "nfc_decisiveness", 
@@ -247,16 +228,13 @@ if(nrow(nfc_df) > 0) {
     theme_minimal() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1),
           legend.title = element_blank(),
-          legend.position = "bottom",
-          plot.title = element_text(hjust = 0.5, size = 14, face = "bold"))
+          legend.position = "bottom")
 }
 ```
-</div>
 
 ## Interpretation
 
-<div class="interpretation-box">
-```{r nfc_interpret, results='asis'}
+```{r nfc_interpret, echo=FALSE, results='asis'}
 # Skip this chunk if no NFC data is available
 if(exists("nfc_df") && nrow(nfc_df) > 0) {
   cat("- **Preference for Order** (Score: ", round(nfc_df$Your_Response[nfc_df$Category == "nfc_order"], 2), "): Your preference for order, structure, and routine in your life.\n\n")
@@ -272,7 +250,6 @@ if(exists("nfc_df") && nrow(nfc_df) > 0) {
   cat("- **Overall Need for Closure** (Score: ", round(nfc_df$Your_Response[nfc_df$Category == "nfc_total"], 2), "): Your general tendency to seek definitive answers and avoid ambiguity.\n\n")
 }
 ```
-</div>
 
 ### How This Relates to Negotiation
 
@@ -282,7 +259,7 @@ Your Need for Closure can influence your negotiation style in several ways:
 - Lower scores may indicate comfort with ambiguity and willingness to keep options open longer during negotiations.
 - Understanding your need for closure can help you recognise when you might be rushing to resolution versus when you might benefit from exploring more options.
 
-<div class="page-break"></div>
+\newpage
 
 # Need for Cognition Assessment
 
@@ -290,8 +267,7 @@ This section shows your responses to the Need for Cognition scale, which measure
 
 ## Your Need for Cognition Score
 
-<div class="chart-container">
-```{r ncs_chart, fig.width=8, fig.height=5, fig.align='center'}
+```{r ncs_chart, echo=FALSE, fig.width=6, fig.height=4, fig.align='center'}
 # Create a dataframe for NCS category
 ncs_df <- plot_data %>% 
   filter(Category %in% c("ncs_total"))
@@ -313,16 +289,13 @@ if(nrow(ncs_df) > 0) {
          x = "") +
     theme_minimal() +
     theme(legend.title = element_blank(),
-          legend.position = "bottom",
-          plot.title = element_text(hjust = 0.5, size = 14, face = "bold"))
+          legend.position = "bottom")
 }
 ```
-</div>
 
 ## Interpretation
 
-<div class="interpretation-box">
-```{r ncs_interpret, results='asis'}
+```{r ncs_interpret, echo=FALSE, results='asis'}
 # Skip this chunk if no NCS data is available
 if(exists("ncs_df") && nrow(ncs_df) > 0) {
   cat("Your Need for Cognition score (", round(ncs_df$Your_Response[1], 2), ") reflects your tendency to engage in and enjoy thinking.\n\n")
@@ -332,7 +305,6 @@ if(exists("ncs_df") && nrow(ncs_df) > 0) {
   cat("- **Lower scores** (below 3.5) suggest that you may prefer simpler cognitive tasks and might be less inclined to engage in effortful thinking when it's not necessary.\n\n")
 }
 ```
-</div>
 
 ### How This Relates to Negotiation
 
@@ -346,7 +318,7 @@ Your Need for Cognition can influence your negotiation approach in several ways:
 
 ### Planning behaviours for reflection
 
-```{r, tidy = T}
+```{r, tidy = T, echo = F}
 dypre <- planning_items
 
 dypre <- subset(dypre, Item != "Plan20" & Item != "Plan21")
@@ -401,21 +373,28 @@ dypre <- dypre[, c(5, 3, 2, 4)]
 colnames(dypre) <- c("Dimension", "Behaviour", "You", "MBS Participants")
 
 dypre <- dypre[order(dypre$You, decreasing = TRUE), ]
+
 ```
 
-**For further reflection, below are the three questions you rated highest:**
 
-```{r}
-kable(dypre[1:3, ], row.names = F)
+```{r, results = 'asis', echo = F}
+writeLines("\\begin{flushleft}")
+cat("For further reflection, below are the three questions you rated highest:")
+writeLines("\\end{flushleft}")
+```
+```{r, echo = F}
+kable(dypre[1:3, ], row.names	= F)
+```
+```{r, results = 'asis', echo = F}
+writeLines("\\begin{flushleft}")
+cat("For further reflection, below are the three questions you rated lowest:")
+writeLines("\\end{flushleft}")
+```
+```{r, echo = F}
+kable(dypre[17:19, ],  row.names	= F)
 ```
 
-**For further reflection, below are the three questions you rated lowest:**
-
-```{r}
-kable(dypre[17:19, ], row.names = F)
-```
-
-<div class="page-break"></div>
+\newpage
 
 # Social Value Orientation (SVO)
 
@@ -423,8 +402,7 @@ Social Value Orientation (SVO) describes how people value outcomes for themselve
 
 ## Your SVO Results
 
-<div class="chart-container">
-```{r svo_chart, fig.width=8, fig.height=6, fig.align='center'}
+```{r svo_chart, echo=FALSE, fig.width=7, fig.height=4, fig.align='center'}
 # Check if SVO angle exists in the data
 if(exists("params") && !is.null(params$svo_angle) && !is.na(params$svo_angle)) {
   # Create angle visualization
@@ -465,16 +443,15 @@ if(exists("params") && !is.null(params$svo_angle) && !is.na(params$svo_angle)) {
           axis.title = element_blank(),
           axis.ticks = element_blank(),
           panel.grid = element_blank(),
-          plot.title = element_text(hjust = 0.5, size = 14, face = "bold")) +
+          plot.title = element_text(hjust = 0.5)) +
     ggtitle("Your Social Value Orientation")
 } else {
   # Show a message if SVO data is missing
   grid::grid.text("SVO data not available", gp = grid::gpar(fontsize = 14, col = "gray50"))
 }
 ```
-</div>
 
-```{r svo_type_display, results='asis'}
+```{r svo_type_display, echo=FALSE, results='asis'}
 if(exists("params") && !is.null(params$svo_type) && !is.na(params$svo_type)) {
   cat("**Your SVO angle:** ", round(params$svo_angle, 2), "°\n\n")
   cat("**Your SVO type:** ", params$svo_type, "\n\n")
@@ -483,8 +460,7 @@ if(exists("params") && !is.null(params$svo_type) && !is.na(params$svo_type)) {
 
 ## What Your SVO Type Means
 
-<div class="interpretation-box">
-```{r svo_interpretation, results='asis'}
+```{r svo_interpretation, echo=FALSE, results='asis'}
 if(exists("params") && !is.null(params$svo_type)) {
   cat("Based on your responses, your Social Value Orientation is classified as **", params$svo_type, "**. This means:\n\n")
   
@@ -501,7 +477,6 @@ if(exists("params") && !is.null(params$svo_type)) {
   }
 }
 ```
-</div>
 
 ## SVO and Negotiation
 
@@ -514,8 +489,7 @@ Your Social Value Orientation has important implications for how you approach ne
 
 Understanding your own orientation can help you recognise when your natural tendencies might help or hinder different types of negotiations. For instance, prosocial orientations may excel in long-term relationship building, while individualistic orientations might serve better in one-time distributive bargaining.
 
-<div class="chart-container">
-```{r svo_benchmark, fig.width=10, fig.height=4, fig.align='center'}
+```{r svo_benchmark, echo=FALSE, fig.width=7, fig.height=3, fig.align='center'}
 # Create benchmark comparison if data exists
 if(exists("plot_data") && "SVO_angle" %in% plot_data$Category) {
   # Extract SVO angle data
@@ -552,24 +526,21 @@ if(exists("plot_data") && "SVO_angle" %in% plot_data$Category) {
           axis.ticks.y = element_blank(),
           axis.title.y = element_blank(),
           panel.grid.major.y = element_blank(),
-          panel.grid.minor = element_blank(),
-          plot.title = element_text(hjust = 0.5, size = 12, face = "bold")) +
+          panel.grid.minor = element_blank()) +
     labs(x = "SVO Angle (degrees)", title = "Your SVO Compared to Benchmarks")
 }
 ```
-</div>
 
 Most people (approximately 60%) are classified as prosocial, while about 30% are individualistic, 5% competitive, and 5% altruistic. Your position relative to these distributions can help you understand your natural tendencies compared to others.
 
-<div class="page-break"></div>
+\newpage
 
 # Bargaining
 
 The bargaining aspect of negotiation refers to the process of making offers and proposals. 
 
-<div class="chart-container">
-```{r, fig.align='center', fig.width = 8, fig.height = 4}
-title <- "Overall bargaining score"
+```{r, echo = F, fig.align='center', fig.width = 6.4, fig.height = 1, include = T, message = F, fig.margin = T, warning = F, results = 'asis'}
+title <- str_pad("Overall bargaining score", width = 40, side=c('right'), pad=' ')
 
 barg_df <- plot_data[1, ]
 
@@ -579,73 +550,128 @@ barg_long <- barg_df %>%
                values_to = "Value")
 
 q5 <- ggplot(barg_long, aes(y = Value, x = Measure, fill = factor(Measure))) +
-  geom_bar(stat = "identity") + 
-  theme_minimal() + 
-  ylab("Score") + 
-  xlab("") +
-  ggtitle(title) +
-  theme(legend.position = "none", 
-        plot.title = element_text(hjust = 0.5, size = 14, face = "bold")) + 
-  geom_text(data = barg_long, aes(label = round(Value, 2)), vjust = -0.5) +
+  geom_bar(stat = "identity") + theme_bw() + ylab("") + xlab(title) +
+  theme(legend.position = "none", axis.title.y = element_text(angle=0, hjust = 0, size = 9)) + 
+  geom_text(data = barg_long, aes(label = round(Value, 2), y = 6.5)) +
   scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7), 
-                     limits = c(0, 8)) + 
+  labels=c("1" = "1", "2" = "", "3" = "3", "4" = "", "5" = "5", "6" = "", "7" = "7")) + 
   scale_x_discrete(labels = c("Your_Response" = "You", "Benchmark" = "MBS Participants")) + 
-  scale_fill_manual(values = c("Benchmark" = "grey60", "Your_Response" = "#3498db"))
+  coord_cartesian(ylim=c(1,8)) + scale_fill_manual(values = c("grey60", "Green")) 
+q5 <- q5 + rotate()
 
 q5
 ```
-</div>
 
 ## Bargaining dimensions
 
-<div class="chart-container">
-```{r, fig.align='center', fig.width = 10, fig.height = 12}
-# Create all four bargaining dimension charts
-titles <- c(
-  "Constructing and communicating\npersuasive arguments",
-  "Making a deal that includes\nall of your interests",
-  "Efforts to claim as much\nvalue as possible",
-  "Efforts to make both\nsides better off"
-)
+```{r, echo = F, fig.align='center', fig.width = 6.4, fig.height = 1, include = T, message = F, fig.margin = T, warning = F, results = 'asis'}
+title <- str_wrap("Constructing and communicating persuasive arguments", width = 40)
+title <- unlist(str_split(title, pattern = "\\n", n = Inf, simplify = FALSE), use.names = F)
+title <- str_pad(title, width = 40, side = c("right"), pad = " ")
+title <- paste(title[1], title[2], sep ="\n")
 
-rows <- c(2, 3, 4, 5)
-plots <- list()
+barg_df <- plot_data[2, ]
 
-for(i in 1:4) {
-  barg_df <- plot_data[rows[i], ]
-  
-  barg_long <- barg_df %>%
-    pivot_longer(cols = c(Your_Response, Benchmark),
-                 names_to = "Measure",
-                 values_to = "Value")
-  
-  plot <- ggplot(barg_long, aes(y = Value, x = Measure, fill = factor(Measure))) +
-    geom_bar(stat = "identity") + 
-    theme_minimal() + 
-    ylab("Score") + 
-    xlab("") +
-    ggtitle(titles[i]) +
-    theme(legend.position = "none",
-          plot.title = element_text(hjust = 0.5, size = 12)) + 
-    geom_text(data = barg_long, aes(label = round(Value, 2)), vjust = -0.5) +
-    scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7), 
-                       limits = c(0, 8)) + 
-    scale_x_discrete(labels = c("Your_Response" = "You", "Benchmark" = "MBS Participants")) + 
-    scale_fill_manual(values = c("Benchmark" = "grey60", "Your_Response" = "#3498db"))
-  
-  plots[[i]] <- plot
-}
+barg_long <- barg_df %>%
+  pivot_longer(cols = c(Your_Response, Benchmark),
+               names_to = "Measure",
+               values_to = "Value")
 
-# Arrange plots in a 2x2 grid
-cowplot::plot_grid(plotlist = plots, ncol = 2, nrow = 2)
+q6 <- ggplot(barg_long, aes(y = Value, x = Measure, fill = factor(Measure))) +
+  geom_bar(stat = "identity") + theme_bw() + ylab("") + xlab(title) +
+  theme(legend.position = "none", axis.title.y = element_text(angle=0, hjust = 0, size = 9)) + 
+  geom_text(data = barg_long, aes(label = round(Value, 2), y = 6.5)) +
+  scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7), 
+  labels=c("1" = "1", "2" = "", "3" = "3", "4" = "", "5" = "5", "6" = "", "7" = "7")) + 
+  scale_x_discrete(labels = c("Your_Response" = "You", "Benchmark" = "MBS Participants")) + 
+  coord_cartesian(ylim=c(1,8)) + scale_fill_manual(values = c("grey60", "Green")) 
+q6 <- q6 + rotate()
 ```
-</div>
 
-<div class="page-break"></div>
+```{r, echo = F, fig.align='center', fig.width = 6.4, fig.height = 1, include = T, message = F, fig.margin = T, warning = F, results = 'asis'}
+title <- str_wrap("Making a deal that includes all of your interests", width = 40)
+title <- unlist(str_split(title, pattern = "\\n", n = Inf, simplify = FALSE), use.names = F)
+title <- str_pad(title, width = 40, side = c("right"), pad = " ")
+title <- paste(title[1], title[2], sep ="\n")
+
+barg_df <- plot_data[3, ]
+
+barg_long <- barg_df %>%
+  pivot_longer(cols = c(Your_Response, Benchmark),
+               names_to = "Measure",
+               values_to = "Value")
+
+q7 <- ggplot(barg_long, aes(y = Value, x = Measure, fill = factor(Measure))) +
+  geom_bar(stat = "identity") + theme_bw() + ylab("") + xlab(title) +
+  theme(legend.position = "none", axis.title.y = element_text(angle=0, hjust = 0, size = 9)) + 
+  geom_text(data = barg_long, aes(label = round(Value, 2), y = 6.5)) +
+  scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7), 
+  labels=c("1" = "1", "2" = "", "3" = "3", "4" = "", "5" = "5", "6" = "", "7" = "7")) + 
+  scale_x_discrete(labels = c("Your_Response" = "You", "Benchmark" = "MBS Participants")) + 
+  coord_cartesian(ylim=c(1,8)) + scale_fill_manual(values = c("grey60", "Green")) 
+q7 <- q7 + rotate()
+```
+
+```{r, echo = F, fig.align='center', fig.width = 6.4, fig.height = 1, include = T, message = F, fig.margin = T, warning = F, results = 'asis'}
+title <- str_wrap("Efforts to claim as much value as possible", width = 40)
+title <- unlist(str_split(title, pattern = "\\n", n = Inf, simplify = FALSE), use.names = F)
+title <- str_pad(title, width = 40, side = c("right"), pad = " ")
+title <- paste(title[1], title[2], sep ="\n")
+
+barg_df <- plot_data[4, ]
+
+barg_long <- barg_df %>%
+  pivot_longer(cols = c(Your_Response, Benchmark),
+               names_to = "Measure",
+               values_to = "Value")
+
+q8 <- ggplot(barg_long, aes(y = Value, x = Measure, fill = factor(Measure))) +
+  geom_bar(stat = "identity") + theme_bw() + ylab("") + xlab(title) +
+  theme(legend.position = "none", axis.title.y = element_text(angle=0, hjust = 0, size = 9)) + 
+  geom_text(data = barg_long, aes(label = round(Value, 2), y = 6.5)) +
+  scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7), 
+  labels=c("1" = "1", "2" = "", "3" = "3", "4" = "", "5" = "5", "6" = "", "7" = "7")) + 
+  scale_x_discrete(labels = c("Your_Response" = "You", "Benchmark" = "MBS Participants")) + 
+  coord_cartesian(ylim=c(1,8)) + scale_fill_manual(values = c("grey60", "Green")) 
+q8 <- q8 + rotate()
+```
+
+```{r, echo = F, fig.align='center', fig.width = 6.4, fig.height = 1, include = T, message = F, fig.margin = T, warning = F, results = 'asis'}
+title <- str_wrap("Efforts to make both sides better off", width = 40)
+title <- unlist(str_split(title, pattern = "\\n", n = Inf, simplify = FALSE), use.names = F)
+title <- str_pad(title, width = 40, side = c("right"), pad = " ")
+# title <- paste(title[1], title[2], sep ="\n")
+
+barg_df <- plot_data[5, ]
+
+barg_long <- barg_df %>%
+  pivot_longer(cols = c(Your_Response, Benchmark),
+               names_to = "Measure",
+               values_to = "Value")
+
+q9 <- ggplot(barg_long, aes(y = Value, x = Measure, fill = factor(Measure))) +
+  geom_bar(stat = "identity") + theme_bw() + ylab("") + xlab(title) +
+  theme(legend.position = "none", axis.title.y = element_text(angle=0, hjust = 0, size = 9)) + 
+  geom_text(data = barg_long, aes(label = round(Value, 2), y = 6.5)) +
+  scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7), 
+  labels=c("1" = "1", "2" = "", "3" = "3", "4" = "", "5" = "5", "6" = "", "7" = "7")) + 
+  scale_x_discrete(labels = c("Your_Response" = "You", "Benchmark" = "MBS Participants")) + 
+  coord_cartesian(ylim=c(1,8)) + scale_fill_manual(values = c("grey60", "Green")) 
+q9 <- q9 + rotate()
+
+bl <- align_plots(q6, q7, q8, q9, align="v")
+
+ggdraw(bl[[1]])
+ggdraw(bl[[2]])
+ggdraw(bl[[3]])
+ggdraw(bl[[4]])
+```
+
+\newpage
 
 ## Bargaining behaviours for reflection
 
-```{r, tidy = T}
+```{r, tidy = T, echo = F}
 dybar <- bargaining_items
 
 dybar <- subset(dybar, Item != "Barg10")
@@ -717,27 +743,31 @@ colnames(dybar) <- c("Dimension", "Behaviour", "You", "MBS Participants")
 dybar <- dybar[order(dybar$You, decreasing = TRUE), ]
 ```
 
-**For further reflection, below are the three questions you rated highest:**
-
-```{r}
-kable(dybar[1:3, ], row.names = F)
+```{r, results = 'asis', echo = F}
+writeLines("\\begin{flushleft}")
+cat("For further reflection, below are the three questions you rated highest:")
+writeLines("\\end{flushleft}")
+```
+```{r, echo = F}
+kable(dybar[1:3, ], row.names	= F)
+```
+```{r, results = 'asis', echo = F}
+writeLines("\\begin{flushleft}")
+cat("For further reflection, below are the three questions you rated lowest:")
+writeLines("\\end{flushleft}")
+```
+```{r, echo = F}
+kable(dybar[23:25, ],  row.names	= F)
 ```
 
-**For further reflection, below are the three questions you rated lowest:**
-
-```{r}
-kable(dybar[23:25, ], row.names = F)
-```
-
-<div class="page-break"></div>
+\newpage
 
 # Implementation
 
 The implementation aspect of negotiation refer to actions that should be taken after reaching an agreement. 
 
-<div class="chart-container">
-```{r, fig.align='center', fig.width = 8, fig.height = 4}
-title <- "Overall implementation score"
+```{r, echo = F, fig.align='center', fig.width = 6.4, fig.height = 1, include = T, message = F, fig.margin = T, warning = F, results = 'asis'}
+title <- str_pad("Overall implementation score", width = 40, side=c('right'), pad=' ')
 
 imp_df <- plot_data[6, ]
 
@@ -746,70 +776,70 @@ imp_long <- imp_df %>%
                names_to = "Measure",
                values_to = "Value")
 
-q10 <- ggplot(imp_long, aes(y = Value, x = Measure, fill = factor(Measure))) +
-  geom_bar(stat = "identity") + 
-  theme_minimal() + 
-  ylab("Score") + 
-  xlab("") +
-  ggtitle(title) +
-  theme(legend.position = "none", 
-        plot.title = element_text(hjust = 0.5, size = 14, face = "bold")) + 
-  geom_text(data = imp_long, aes(label = round(Value, 2)), vjust = -0.5) +
-  scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7), 
-                     limits = c(0, 8)) + 
-  scale_x_discrete(labels = c("Your_Response" = "You", "Benchmark" = "MBS Participants")) + 
-  scale_fill_manual(values = c("Benchmark" = "grey60", "Your_Response" = "#3498db"))
+q10 <- q10 + rotate()
 
 q10
 ```
-</div>
 
 ## Implementation dimensions
 
-<div class="chart-container">
-```{r, fig.align='center', fig.width = 10, fig.height = 6}
-# Create both implementation dimension charts
-titles <- c(
-  "Efforts that help you and your counterpart\nto follow through on promises",
-  "Consulting more experienced negotiators\nto improve for the future"
-)
+```{r, echo = F, fig.align='center', fig.width = 6.4, fig.height = 1, include = T, message = F, fig.margin = T, warning = F, results = 'asis'}
+title <- str_wrap("Efforts that help you and your counterpart to follow through on promises", width = 40)
+title <- unlist(str_split(title, pattern = "\\n", n = Inf, simplify = FALSE), use.names = F)
+title <- str_pad(title, width = 40, side = c("right"), pad = " ")
+title <- paste(title[1], title[2], sep ="\n")
 
-rows <- c(8, 7)
-plots <- list()
+imp_df <- plot_data[8, ]
 
-for(i in 1:2) {
-  imp_df <- plot_data[rows[i], ]
-  
-  imp_long <- imp_df %>%
-    pivot_longer(cols = c(Your_Response, Benchmark),
-                 names_to = "Measure",
-                 values_to = "Value")
-  
-  plot <- ggplot(imp_long, aes(y = Value, x = Measure, fill = factor(Measure))) +
-    geom_bar(stat = "identity") + 
-    theme_minimal() + 
-    ylab("Score") + 
-    xlab("") +
-    ggtitle(titles[i]) +
-    theme(legend.position = "none",
-          plot.title = element_text(hjust = 0.5, size = 12)) + 
-    geom_text(data = imp_long, aes(label = round(Value, 2)), vjust = -0.5) +
-    scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7), 
-                       limits = c(0, 8)) + 
-    scale_x_discrete(labels = c("Your_Response" = "You", "Benchmark" = "MBS Participants")) + 
-    scale_fill_manual(values = c("Benchmark" = "grey60", "Your_Response" = "#3498db"))
-  
-  plots[[i]] <- plot
-}
+imp_long <- imp_df %>%
+  pivot_longer(cols = c(Your_Response, Benchmark),
+               names_to = "Measure",
+               values_to = "Value")
 
-# Arrange plots side by side
-cowplot::plot_grid(plotlist = plots, ncol = 2, nrow = 1)
+q11 <- ggplot(imp_long, aes(y = Value, x = Measure, fill = factor(Measure))) +
+  geom_bar(stat = "identity") + theme_bw() + ylab("") + xlab(title) +
+  theme(legend.position = "none", axis.title.y = element_text(angle=0, hjust = 0, size = 9)) + 
+  geom_text(data = imp_long, aes(label = round(Value, 2), y = 6.5)) +
+  scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7), 
+  labels=c("1" = "1", "2" = "", "3" = "3", "4" = "", "5" = "5", "6" = "", "7" = "7")) + 
+  scale_x_discrete(labels = c("Your_Response" = "You", "Benchmark" = "MBS Participants")) + 
+  coord_cartesian(ylim=c(1,8)) + scale_fill_manual(values = c("grey60", "Green")) 
+q11 <- q11 + rotate()
+
 ```
-</div>
+
+```{r, echo = F, fig.align='center', fig.width = 6.4, fig.height = 1, include = T, message = F, fig.margin = T, warning = F, results = 'asis'}
+title <- str_wrap("Consulting more experienced negotiators to improve for the future", width = 40)
+title <- unlist(str_split(title, pattern = "\\n", n = Inf, simplify = FALSE), use.names = F)
+title <- str_pad(title, width = 40, side = c("right"), pad = " ")
+title <- paste(title[1], title[2], sep ="\n")
+
+imp_df <- plot_data[7, ]
+
+imp_long <- imp_df %>%
+  pivot_longer(cols = c(Your_Response, Benchmark),
+               names_to = "Measure",
+               values_to = "Value")
+
+q12 <- ggplot(imp_long, aes(y = Value, x = Measure, fill = factor(Measure))) +
+  geom_bar(stat = "identity") + theme_bw() + ylab("") + xlab(title) +
+  theme(legend.position = "none", axis.title.y = element_text(angle=0, hjust = 0, size = 9)) + 
+  geom_text(data = imp_long, aes(label = round(Value, 2), y = 6.5)) +
+  scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7), 
+  labels=c("1" = "1", "2" = "", "3" = "3", "4" = "", "5" = "5", "6" = "", "7" = "7")) + 
+  scale_x_discrete(labels = c("Your_Response" = "You", "Benchmark" = "MBS Participants")) + 
+  coord_cartesian(ylim=c(1,8)) + scale_fill_manual(values = c("grey60", "Green")) 
+q12 <- q12 + rotate()
+
+il <- align_plots(q11, q12, align="v")
+
+ggdraw(il[[1]])
+ggdraw(il[[2]])
+```
 
 ## Items for reflection
 
-```{r, tidy = T}
+```{r, tidy = T, echo = F, results = 'asis'}
 dyimp <- implementation_items
 
 imp_subset <- c("Post1", "Post2", "Post3", "Post5", "Post6")
@@ -837,21 +867,30 @@ colnames(dyimp) <- c("Dimension", "Behaviour", "You", "MBS Participants")
 dyimp <- dyimp[order(dyimp$You, decreasing = TRUE), ]
 ```
 
-**For further reflection, below are the two questions you rated highest:**
 
-```{r}
+```{r, results = 'asis', echo = F}
+writeLines("\\begin{flushleft}")
+cat("For further reflection, below are the two questions you rated highest:")
+writeLines("\\end{flushleft}")
+```
+```{r, echo = F}
 kable(dyimp[1:2, ], row.names = F)
 ```
-
-**For further reflection, below are the two questions you rated lowest:**
-
-```{r}
+```{r, results = 'asis', echo = F}
+writeLines("\\begin{flushleft}")
+cat("For further reflection, below are the two questions you rated lowest:")
+writeLines("\\end{flushleft}")
+```
+```{r, echo = F}
 kable(dyimp[4:5, ], row.names = F)
 ```
 
----
-
-<div style="text-align: center; margin-top: 40px; padding: 20px; background-color: #f8f9fa; border-radius: 5px;">
-<p><em>End of Report</em></p>
-<p style="font-size: 0.9em; color: #666;">Generated on `r format(Sys.Date(), "%B %d, %Y")`</p>
-</div>
+\newpage <- ggplot(imp_long, aes(y = Value, x = Measure, fill = factor(Measure))) +
+  geom_bar(stat = "identity") + theme_bw() + ylab("") + xlab(title) +
+  theme(legend.position = "none", axis.title.y = element_text(angle=0, hjust = 0, size = 9)) + 
+  geom_text(data = imp_long, aes(label = round(Value, 2), y = 6.5)) +
+  scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7), 
+  labels=c("1" = "1", "2" = "", "3" = "3", "4" = "", "5" = "5", "6" = "", "7" = "7")) + 
+  scale_x_discrete(labels = c("Your_Response" = "You", "Benchmark" = "MBS Participants")) + 
+  coord_cartesian(ylim=c(1,8)) + scale_fill_manual(values = c("grey60", "Green")) 
+q10
