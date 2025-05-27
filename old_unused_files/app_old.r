@@ -980,6 +980,12 @@ server <- function(input, output, session) {
           )
         )
       
+        #Debugging to check on barg variable
+            message("Debugging scores:")
+            message("barg score: ", user_responses$barg)
+            message("pre score: ", user_responses$pre)
+            message("imp score: ", user_responses$imp)
+                  
       shinyjs::show("loading")
       
       tryCatch({
@@ -1135,6 +1141,12 @@ generate_report <- function(user_responses) {
   
   # Merge with benchmarks
   df <- merge(summary_scores, benchmarks, by = "Category")
+  
+  #Debugging 
+  message("Final df structure:")
+    print(head(df, 10))
+    message("Row 1 of df (should be barg):")
+    print(df[1, ])
   
   # Render the Rmd template
   report_path <- tempfile(fileext = ".pdf")

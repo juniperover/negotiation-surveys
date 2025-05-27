@@ -220,6 +220,9 @@ The bargaining aspect of negotiation refers to the process of making offers and 
 title <- "Overall bargaining score"
 
 barg_df <- plot_data[1, ]
+#next 2 lines are temporary for debugging
+message("Bargaining data in template:")
+print(barg_df)
 
 barg_long <- barg_df %>%
   pivot_longer(cols = c(Your_Response, Benchmark),
