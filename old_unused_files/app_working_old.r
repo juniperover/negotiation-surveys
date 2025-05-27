@@ -616,108 +616,8 @@ sidebarLayout(
 )  # This closes fluidPage
 
 # Server logic
-# Server logic
 server <- function(input, output, session) {
   
-  # Function to check if all needed files for the report are present
-  check_report_dependencies <- function() {
-    message("Checking report dependencies...")
-    
-    # Check for main template file
-    if (!file.exists("report_template.Rmd")) {
-      message("WARNING: report_template.Rmd not found in current directory")
-      message("Current working directory: ", getwd())
-      message("Files in current directory: ", paste(list.files(), collapse = ", "))
-    } else {
-      message("Found report_template.Rmd")
-    }
-    
-    # Check for logo file
-    logo_path <- "www/mbslogo.jpg"
-    if (!file.exists(logo_path)) {
-      message("WARNING: Logo file not found at ", logo_path)
-      
-      # Check if www directory exists
-      if (!dir.exists("www")) {
-        message("WARNING: www directory does not exist")
-        dir.create("www", showWarnings = FALSE)
-        message("Created www directory")
-      } else {
-        message("www directory exists")
-        message("Files in www directory: ", paste(list.files("www"), collapse = ", "))
-      }
-    } else {
-      message("Found logo file at ", logo_path)
-    }
-    
-    # Check if svo.js file exists
-    if (!file.exists("www/svo.js")) {
-      message("WARNING: svo.js not found in www directory")
-    } else {
-      message("Found svo.js file")
-    }
-    
-    # Check R packages needed for report rendering
-    required_packages <- c("knitr", "rmarkdown", "dplyr", "ggplot2", "ggpubr", 
-                           "stringr", "cowplot", "tidyr", "tools", "xtable", "grid")
-    
-    missing_packages <- required_packages[!sapply(required_packages, requireNamespace, quietly = TRUE)]
-    
-    if (length(missing_packages) > 0) {
-      message("WARNING: The following packages required for report rendering are missing: ", 
-              paste(missing_packages, collapse = ", "))
-    } else {
-      message("All required R packages for report rendering are available")
-    }
-    
-    # Check if the server can write to temp directory
-    temp_test_file <- file.path(tempdir(), "write_test.txt")
-    tryCatch({
-      writeLines("test", temp_test_file)
-      if (file.exists(temp_test_file)) {
-        message("Successfully wrote to temporary directory at ", tempdir())
-        file.remove(temp_test_file)
-      }
-    }, error = function(e) {
-      message("WARNING: Cannot write to temporary directory: ", e$message)
-    })
-    
-    # Check if rmarkdown can render HTML
-    can_render_html <- tryCatch({
-      if (requireNamespace("rmarkdown", quietly = TRUE)) {
-        # Test if we can render a minimal Rmd to HTML
-        test_rmd <- file.path(tempdir(), "test.Rmd")
-        writeLines("---\ntitle: \"Test\"\noutput: html_document\n---\n\nTest", test_rmd)
-        test_html <- tempfile(fileext = ".html")
-        rmarkdown::render(test_rmd, output_file = test_html, quiet = TRUE)
-        file.exists(test_html)
-      } else {
-        FALSE
-      }
-    }, error = function(e) {
-      message("WARNING: Error testing rmarkdown HTML rendering: ", e$message)
-      FALSE
-    })
-    
-    if (can_render_html) {
-      message("Successfully tested rmarkdown HTML rendering")
-    } else {
-      message("WARNING: Could not test rmarkdown HTML rendering")
-    }
-    
-    message("Dependency check complete")
-  }
-  
-  # Run dependency check when the server starts
-  check_report_dependencies()
-  
-  # Create reactive values to store debugging information
-  debug_mode <- reactive({
-    query <- parseQueryString(session$clientData$url_search)
-    !is.null(query$debug) && query$debug == "true"
-  })
-  
-  # Email validation function
   is_valid_email <- function(x) {
     grepl("^[[:alnum:]._%-]+@[[:alnum:].-]+\\.[[:alpha:]]{2,}$", x)
   }
@@ -788,91 +688,6 @@ server <- function(input, output, session) {
     })
   })
   
-  # Create debugging outputs
-  output$dependencyWarnings <- renderUI({
-    req(debug_mode())
-    
-    # Run checks and capture output
-    log_output <- capture.output(check_report_dependencies())
-    
-    # Count warnings
-    warning_count <- sum(grepl("WARNING", log_output))
-    
-    if (warning_count > 0) {
-      div(
-        style = "background-color: #ffe6e6; border-left: 4px solid #ff6666; padding: 15px; margin: 20px 0;",
-        h4("Report Dependency Warnings"),
-        p(paste("Found", warning_count, "potential issues with report generation.")),
-        pre(paste(log_output, collapse = "\n")),
-        p("These issues may affect report generation. Please address them to ensure reports work properly.")
-      )
-    } else {
-      div(
-        style = "background-color: #e6ffe6; border-left: 4px solid #66ff66; padding: 15px; margin: 20px 0;",
-        h4("Report Dependencies OK"),
-        p("All required dependencies for report generation appear to be available.")
-      )
-    }
-  })
-  
-  output$debugInfo <- renderPrint({
-    req(debug_mode())
-    
-    # System information
-    cat("System Information:\n")
-    cat("R version:", R.version.string, "\n")
-    cat("Working directory:", getwd(), "\n")
-    cat("Temp directory:", tempdir(), "\n")
-    cat("User directory:", path.expand("~"), "\n\n")
-    
-    # Check if we're running in Posit Connect
-    is_posit <- any(grepl("posit|rstudio|connect", tolower(names(Sys.getenv()))))
-    cat("Running in Posit Connect:", is_posit, "\n\n")
-    
-    # List installed packages
-    cat("Key packages:\n")
-    for (pkg in c("rmarkdown", "knitr", "shiny", "googlesheets4", "dplyr", "ggplot2")) {
-      if (requireNamespace(pkg, quietly = TRUE)) {
-        pkg_version <- as.character(packageVersion(pkg))
-        cat(pkg, "version:", pkg_version, "\n")
-      } else {
-        cat(pkg, "is NOT installed\n")
-      }
-    }
-    cat("\n")
-    
-    # Check if pandoc is available (needed for Rmd rendering)
-    cat("Pandoc availability:\n")
-    if (rmarkdown::pandoc_available()) {
-      cat("Pandoc is available, version:", rmarkdown::pandoc_version(), "\n")
-    } else {
-      cat("Pandoc is NOT available\n")
-    }
-    cat("\n")
-    
-    # Check environment variables
-    cat("Environment variables of interest:\n")
-    env_vars <- Sys.getenv()
-    for (name in names(env_vars)) {
-      if (grepl("r_|shiny|rstudio|posit|connect|path|home|user|google", tolower(name))) {
-        value <- env_vars[name]
-        if (grepl("key|token|secret|password", tolower(name))) {
-          value <- "[REDACTED]"
-        }
-        cat(name, "=", value, "\n")
-      }
-    }
-    cat("\n")
-    
-    # List files in important directories
-    cat("Files in working directory:\n")
-    print(list.files(getwd(), recursive = FALSE))
-    cat("\n")
-    
-    cat("Files in temp directory:\n")
-    print(list.files(tempdir(), recursive = FALSE))
-  })
-  
   # Create downloadButton UI
   output$downloadButton <- renderUI({
     if (!is.null(report())) {
@@ -883,38 +698,11 @@ server <- function(input, output, session) {
   # Define downloadReport handler
   output$downloadReport <- downloadHandler(
     filename = function() {
-      safe_name <- gsub("[^[:alnum:]]", "_", input$name)
-      paste0("negotiation_report_", safe_name, ".html")
+      paste0("report_", gsub("[^[:alnum:]]", "_", input$name), ".pdf")
     },
     content = function(file) {
-      # Get the report path
-      report_file <- report()
-      
-      # Check if report exists
-      if (is.null(report_file)) {
-        message("ERROR: report() returned NULL")
-        stop("Report generation failed. Please try again.")
-      }
-      
-      if (!file.exists(report_file)) {
-        message("ERROR: Report file does not exist at path: ", report_file)
-        stop("The report file could not be found. Please try again.")
-      }
-      
-      # Try to copy the file
-      tryCatch({
-        file.copy(report_file, file)
-        message("Report copied successfully to: ", file)
-      }, error = function(e) {
-        message("Error copying report: ", e$message)
-        
-        # Try an alternative copy method
-        file_content <- readLines(report_file, warn = FALSE)
-        writeLines(file_content, file)
-        message("Used alternative copy method")
-      })
-    },
-    contentType = "text/html"
+      file.copy(report(), file)
+    }
   )
   
   observeEvent(input$submit, {
@@ -1105,6 +893,25 @@ server <- function(input, output, session) {
       # Calculate summary scores
       user_responses <- user_responses %>%
         mutate(
+          # First make sure all NCS items are numeric
+        NCS1 = as.numeric(as.character(NCS1)),
+        NCS2 = as.numeric(as.character(NCS2)),
+        NCS3 = as.numeric(as.character(NCS3)),
+        NCS4 = as.numeric(as.character(NCS4)),
+        NCS5 = as.numeric(as.character(NCS5)),
+        NCS6 = as.numeric(as.character(NCS6)),
+        NCS7 = as.numeric(as.character(NCS7)),
+        NCS8 = as.numeric(as.character(NCS8)),
+        NCS9 = as.numeric(as.character(NCS9)),
+        NCS10 = as.numeric(as.character(NCS10)),
+        NCS11 = as.numeric(as.character(NCS11)),
+        NCS12 = as.numeric(as.character(NCS12)),
+        NCS13 = as.numeric(as.character(NCS13)),
+        NCS14 = as.numeric(as.character(NCS14)),
+        NCS15 = as.numeric(as.character(NCS15)),
+        NCS16 = as.numeric(as.character(NCS16)),
+        NCS17 = as.numeric(as.character(NCS17)),
+        NCS18 = as.numeric(as.character(NCS18)),
           pre_count = rowMeans(select(., Plan1:Plan5), na.rm = TRUE),
           pre_arena = rowMeans(select(., Plan6:Plan12), na.rm = TRUE),
           pre_preps = rowMeans(select(., Plan13:Plan17), na.rm = TRUE),
@@ -1125,37 +932,37 @@ server <- function(input, output, session) {
           nfc_closemindedness = rowMeans(select(., NFC5, NFC14), na.rm = TRUE),
           nfc_total = rowMeans(select(., NFC1:NFC15), na.rm = TRUE),
           # Reverse score the NCS negative items (3, 4, 5, 7, 8, 9, 12, 16, 17)
-          NCS3_rev = 6 - as.numeric(as.character(NCS3)),
-          NCS4_rev = 6 - as.numeric(as.character(NCS4)),
-          NCS5_rev = 6 - as.numeric(as.character(NCS5)),
-          NCS7_rev = 6 - as.numeric(as.character(NCS7)),
-          NCS8_rev = 6 - as.numeric(as.character(NCS8)),
-          NCS9_rev = 6 - as.numeric(as.character(NCS9)),
-          NCS12_rev = 6 - as.numeric(as.character(NCS12)),
-          NCS16_rev = 6 - as.numeric(as.character(NCS16)),
-          NCS17_rev = 6 - as.numeric(as.character(NCS17)),
+          # Then calculate the reversed items
+        NCS3_rev = 6 - as.numeric(as.character(NCS3)),
+        NCS4_rev = 6 - as.numeric(as.character(NCS4)),
+        NCS5_rev = 6 - as.numeric(as.character(NCS5)),
+        NCS7_rev = 6 - as.numeric(as.character(NCS7)),
+        NCS8_rev = 6 - as.numeric(as.character(NCS8)),
+        NCS9_rev = 6 - as.numeric(as.character(NCS9)),
+        NCS12_rev = 6 - as.numeric(as.character(NCS12)),
+        NCS16_rev = 6 - as.numeric(as.character(NCS16)),
+        NCS17_rev = 6 - as.numeric(as.character(NCS17)),
           # Need for Cognition summary score (using reversed items where appropriate)
           ncs_total = mean(c(
-            as.numeric(as.character(NCS1)), 
-            as.numeric(as.character(NCS2)), 
-            NCS3_rev, 
-            NCS4_rev, 
-            NCS5_rev, 
-            as.numeric(as.character(NCS6)), 
-            NCS7_rev, 
-            NCS8_rev, 
-            NCS9_rev, 
-            as.numeric(as.character(NCS10)), 
-            as.numeric(as.character(NCS11)), 
-            NCS12_rev, 
-            as.numeric(as.character(NCS13)), 
-            as.numeric(as.character(NCS14)), 
-            as.numeric(as.character(NCS15)), 
-            NCS16_rev, 
-            NCS17_rev, 
-            as.numeric(as.character(NCS18))
-          ), na.rm = TRUE),
-          
+          as.numeric(as.character(NCS1)), 
+          as.numeric(as.character(NCS2)), 
+          NCS3_rev, 
+          NCS4_rev, 
+          NCS5_rev, 
+          as.numeric(as.character(NCS6)), 
+          NCS7_rev, 
+          NCS8_rev, 
+          NCS9_rev, 
+          as.numeric(as.character(NCS10)), 
+          as.numeric(as.character(NCS11)), 
+          NCS12_rev, 
+          as.numeric(as.character(NCS13)), 
+          as.numeric(as.character(NCS14)), 
+          as.numeric(as.character(NCS15)), 
+          NCS16_rev, 
+          NCS17_rev, 
+          as.numeric(as.character(NCS18))
+          ), na.rm = TRUE),          
           # SVO calculations based on the scoring syntax
           # Calculate mean values for self and other across the first six items
           SVO_mean_first_six_Items_Self = rowMeans(select(., SVO1_Self, SVO2_Self, SVO3_Self, 
@@ -1204,8 +1011,10 @@ server <- function(input, output, session) {
       })
     }
   })
-  
-  # Helper function to generate report
+}
+
+
+# Helper function to generate report
 generate_report <- function(user_responses) {
   # Define benchmarks
   benchmarks <- data.frame(
@@ -1270,11 +1079,10 @@ generate_report <- function(user_responses) {
     )
   )
   
-  # Merge with benchmarks
-  df <- merge(summary_scores, benchmarks, by = "Category")
+  # Convert user_responses to a list if it's not already
+  user_responses_list <- as.list(user_responses)
   
-  # Create other data needed for the report
-  plot_data <- df
+  # Create separate lists for planning, bargaining, and implementation items
   planning_items <- user_responses %>%
     select(starts_with("Plan")) %>%
     pivot_longer(cols = everything(), names_to = "Item", values_to = "Score")
@@ -1286,14 +1094,22 @@ generate_report <- function(user_responses) {
   implementation_items <- user_responses %>%
     select(starts_with("Post")) %>%
     pivot_longer(cols = everything(), names_to = "Item", values_to = "Score")
-    
+  
+  # Create separate list for NFC items
   nfc_items <- user_responses %>%
     select(starts_with("NFC")) %>%
     pivot_longer(cols = everything(), names_to = "Item", values_to = "Score")
-    
+  
+  # Create separate list for NCS items
   ncs_items <- user_responses %>%
     select(starts_with("NCS")) %>%
     pivot_longer(cols = everything(), names_to = "Item", values_to = "Score")
+    
+  # Create list for SVO data
+  svo_data <- data.frame(
+    SVO_angle = user_responses$SVO_angle,
+    SVO_type = user_responses$SVO_type
+  )
   
   # Map SVO type to a label for reporting
   svo_type_label <- case_when(
@@ -1304,427 +1120,42 @@ generate_report <- function(user_responses) {
     TRUE ~ "Not classified"
   )
   
-  # Create SVO items data if needed
+  # Create data for SVO items display
   svo_items <- user_responses %>%
     select(starts_with("SVO")) %>%
     select(SVO1:SVO6, SVO1_Self:SVO6_Other) %>%
     pivot_longer(cols = starts_with("SVO"), names_to = "Item", values_to = "Value")
   
-  # Create a temporary Rmd file that outputs to HTML instead of PDF
-  temp_rmd_path <- file.path(tempdir(), "temp_report_template.Rmd")
+  # Merge with benchmarks
+  df <- merge(summary_scores, benchmarks, by = "Category")
   
-  # Log what we're doing
-  message("Creating temporary Rmd file at: ", temp_rmd_path)
+  # Render the Rmd template
+  report_path <- tempfile(fileext = ".pdf")
+  message("Report path: ", report_path)
   
-  # Read the original Rmd file
-  original_rmd <- readLines("report_template.Rmd")
-  
-  # Replace the output format to HTML
-  output_line_index <- grep("output:", original_rmd)
-  pdf_line_index <- grep("pdf_document", original_rmd)
-  
-  if (length(output_line_index) > 0 && length(pdf_line_index) > 0) {
-    original_rmd[output_line_index] <- "output:"
-    original_rmd[pdf_line_index] <- "  html_document:"
-    
-    # Add additional HTML formatting
-    original_rmd <- c(original_rmd[1:pdf_line_index], 
-                      "    theme: default",
-                      "    toc: true", 
-                      "    toc_float: true",
-                      "    fig_width: 10",
-                      "    fig_height: 6",
-                      original_rmd[(pdf_line_index+1):length(original_rmd)])
-    
-    # Add custom CSS for better HTML appearance
-    css_index <- grep("header-includes:", original_rmd)
-    if (length(css_index) > 0) {
-      original_rmd <- c(original_rmd[1:css_index-1],
-                        "    css: styles.css",
-                        original_rmd[css_index:length(original_rmd)])
-    }
-    
-    # Create a temporary CSS file
-    css_content <- "
-    body {
-      font-family: Arial, sans-serif;
-      line-height: 1.6;
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    h1, h2, h3, h4 {
-      color: #2c3e50;
-    }
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      margin: 20px 0;
-    }
-    th, td {
-      padding: 12px 15px;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-    }
-    th {
-      background-color: #f2f2f2;
-    }
-    .page-break {
-      page-break-after: always;
-      height: 0;
-      margin: 40px 0;
-      border-top: 1px dashed #ccc;
-    }
-    "
-    writeLines(css_content, file.path(tempdir(), "styles.css"))
-    
-    # Replace LaTeX-specific code that won't work in HTML
-    original_rmd <- gsub("\\\\addtolength\\{\\\\headheight\\}\\{\\.5cm\\}", 
-                        "<!-- HTML version - adjusted in CSS -->", 
-                        original_rmd)
-    original_rmd <- gsub("\\\\pagestyle\\{fancyplain\\}", 
-                        "<!-- HTML version - no page styling needed -->", 
-                        original_rmd)
-    original_rmd <- gsub("\\\\lhead\\{.*\\}", 
-                        paste0("<img src='www/mbslogo.jpg' alt='MBS Logo' style='height: 80px; float: right;'>"), 
-                        original_rmd)
-    original_rmd <- gsub("\\\\renewcommand\\{\\\\headrulewidth\\}\\{0pt\\}", 
-                        "<!-- HTML version - no header rule needed -->", 
-                        original_rmd)
-    original_rmd <- gsub("\\\\let\\\\oldrule=\\\\rule[\\s\\S]*?\\\\pagenumbering\\{gobble\\}", 
-                        "<!-- HTML version - no page numbering needed -->", 
-                        original_rmd)
-    original_rmd <- gsub("\\\\newpage", "<div class='page-break'></div>", original_rmd)
-  }
-  
-  # Write the modified Rmd to a temporary file
-  writeLines(original_rmd, temp_rmd_path)
-  
-  # Copy the logo to the temp directory for rendering
-  if (file.exists("www/mbslogo.jpg")) {
-    temp_www_dir <- file.path(tempdir(), "www")
-    dir.create(temp_www_dir, showWarnings = FALSE, recursive = TRUE)
-    file.copy("www/mbslogo.jpg", file.path(temp_www_dir, "mbslogo.jpg"), overwrite = TRUE)
-  } else {
-    message("WARNING: Logo file 'www/mbslogo.jpg' not found")
-  }
-  
-  # Generate the HTML report
-  report_dir <- tempdir()
-  report_filename <- paste0("report_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".html")
-  report_path <- file.path(report_dir, report_filename)
-  
-  message("Will generate HTML report at: ", report_path)
-  message("Using template from: ", temp_rmd_path)
-  
-  # Use rmarkdown to render the HTML
   tryCatch({
-    # Log what we're doing
-    message("Starting rmarkdown render process...")
-    
-    # Make sure necessary packages are loaded
-    library(knitr)
-    library(rmarkdown)
-    library(dplyr)
-    library(ggplot2)
-    library(ggpubr)
-    library(stringr)
-    library(cowplot)
-    library(tidyr)
-    
-    # Set working directory to temp dir for rendering
-    original_wd <- getwd()
-    setwd(tempdir())
-    
-    # Render to HTML
-    rmarkdown::render(
-      input = temp_rmd_path,
-      output_file = report_path,
-      params = list(
-        name = user_responses$Name,
-        df = df,
-        planning_items = planning_items,
-        bargaining_items = bargaining_items,
-        implementation_items = implementation_items,
-        nfc_items = nfc_items,
-        ncs_items = ncs_items,
-        svo_angle = user_responses$SVO_angle,
-        svo_type = svo_type_label,
-        svo_items = svo_items
-      )
-    )
-    
-    # Reset working directory
-    setwd(original_wd)
-    
-    # Verify the file was created
-    if (file.exists(report_path)) {
-      message("HTML report generated successfully at: ", report_path)
-      message("File size: ", file.info(report_path)$size, " bytes")
-      return(report_path)
-    } else {
-      message("ERROR: Report file does not exist after rendering!")
-      
-      # Fall back to a simple HTML report
-      return(create_fallback_html_report(user_responses, df, plot_data, svo_type_label))
-    }
-    
+    # Update the render call
+    rmarkdown::render("report_template.Rmd", 
+                    output_file = report_path, 
+                    params = list(
+                      name = user_responses$Name,
+                      df = df,
+                      planning_items = planning_items,
+                      bargaining_items = bargaining_items,
+                      implementation_items = implementation_items,
+                      nfc_items = nfc_items,      # Add NFC items
+                      ncs_items = ncs_items,      # Add NCS items
+                      svo_angle = user_responses$SVO_angle,
+                      svo_type = svo_type_label,  # Add SVO type label
+                      svo_items = svo_items       # Add SVO items data
+                    ))
+    message("Report generated successfully.")
   }, error = function(e) {
-    # Reset working directory if error occurs
-    if (exists("original_wd")) setwd(original_wd)
-    
     message("Error generating report: ", e$message)
-    
-    # Create a simple HTML report as fallback
-    return(create_fallback_html_report(user_responses, df, plot_data, svo_type_label))
   })
+  
+  return(report_path)
 }
-
-# Function to create a simple HTML report if the Rmd conversion fails
-create_fallback_html_report <- function(user_responses, df, plot_data, svo_type_label) {
-  # Create a simple HTML report directly without using Rmd
-  report_dir <- tempdir()
-  report_filename <- paste0("report_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".html")
-  report_path <- file.path(report_dir, report_filename)
-  
-  message("Creating fallback HTML report at: ", report_path)
-  
-  # Create a simple report with basic styling
-  html_content <- paste0('
-  <!DOCTYPE html>
-  <html>
-  <head>
-    <title>Negotiation Behaviours and Attitudes Report for ', user_responses$Name, '</title>
-    <style>
-      body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
-      h1, h2, h3 { color: #2c3e50; }
-      table { border-collapse: collapse; width: 100%; margin: 20px 0; }
-      th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
-      th { background-color: #f2f2f2; }
-      .header { display: flex; justify-content: space-between; align-items: center; }
-      .logo { height: 80px; }
-      .score-container { display: flex; flex-wrap: wrap; gap: 20px; margin: 20px 0; }
-      .score-box { flex: 1; min-width: 200px; padding: 15px; background-color: #f8f9fa; border-radius: 5px; }
-      .score-value { font-size: 24px; font-weight: bold; color: #3498db; }
-      .section { margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }
-    </style>
-  </head>
-  <body>
-    <div class="header">
-      <h1>Negotiation Behaviours and Attitudes Report</h1>
-      <img src="www/mbslogo.jpg" alt="MBS Logo" class="logo">
-    </div>
-    
-    <h2>', user_responses$Name, '</h2>
-    
-    <p>This report provides feedback about how you engage in effective negotiation behaviours. 
-    It should be a source of reflection on areas where you are performing well, and areas where you can improve. 
-    You will also see feedback about three other properties that affect your negotiations: need for closure, 
-    need for cognition, and social value orientation. In each section of the report, you can see an explanation 
-    of the measure and how you compare with your peers. <em>Note: "MBS Participants" refers to the average score 
-    of MBS participants.</em></p>
-    
-    <div class="section">
-      <h2>Planning</h2>
-      <div class="score-box">
-        <h3>Overall Planning Score</h3>
-        <div class="score-value">', round(user_responses$pre, 2), '</div>
-        <p>MBS Participants Average: ', plot_data$Benchmark[plot_data$Category == "pre"], '</p>
-      </div>
-      
-      <div class="score-container">
-        <div class="score-box">
-          <h4>Understanding the Counterpart</h4>
-          <div class="score-value">', round(user_responses$pre_count, 2), '</div>
-          <p>Benchmark: ', plot_data$Benchmark[plot_data$Category == "pre_count"], '</p>
-        </div>
-        <div class="score-box">
-          <h4>Setting the Arena</h4>
-          <div class="score-value">', round(user_responses$pre_arena, 2), '</div>
-          <p>Benchmark: ', plot_data$Benchmark[plot_data$Category == "pre_arena"], '</p>
-        </div>
-        <div class="score-box">
-          <h4>Preparing the Self</h4>
-          <div class="score-value">', round(user_responses$pre_preps, 2), '</div>
-          <p>Benchmark: ', plot_data$Benchmark[plot_data$Category == "pre_preps"], '</p>
-        </div>
-        <div class="score-box">
-          <h4>Understanding the Impasse</h4>
-          <div class="score-value">', round(user_responses$pre_imp, 2), '</div>
-          <p>Benchmark: ', plot_data$Benchmark[plot_data$Category == "pre_imp"], '</p>
-        </div>
-      </div>
-    </div>
-    
-    <div class="section">
-      <h2>Bargaining</h2>
-      <div class="score-box">
-        <h3>Overall Bargaining Score</h3>
-        <div class="score-value">', round(user_responses$barg, 2), '</div>
-        <p>MBS Participants Average: ', plot_data$Benchmark[plot_data$Category == "barg"], '</p>
-      </div>
-      
-      <div class="score-container">
-        <div class="score-box">
-          <h4>Mutual Benefit</h4>
-          <div class="score-value">', round(user_responses$barg_mut, 2), '</div>
-          <p>Benchmark: ', plot_data$Benchmark[plot_data$Category == "barg_mut"], '</p>
-        </div>
-        <div class="score-box">
-          <h4>Comprehensive</h4>
-          <div class="score-value">', round(user_responses$barg_com, 2), '</div>
-          <p>Benchmark: ', plot_data$Benchmark[plot_data$Category == "barg_com"], '</p>
-        </div>
-        <div class="score-box">
-          <h4>Argumentation</h4>
-          <div class="score-value">', round(user_responses$barg_arg, 2), '</div>
-          <p>Benchmark: ', plot_data$Benchmark[plot_data$Category == "barg_arg"], '</p>
-        </div>
-        <div class="score-box">
-          <h4>Getting the Most</h4>
-          <div class="score-value">', round(user_responses$barg_get, 2), '</div>
-          <p>Benchmark: ', plot_data$Benchmark[plot_data$Category == "barg_get"], '</p>
-        </div>
-      </div>
-    </div>
-    
-    <div class="section">
-      <h2>Implementation</h2>
-      <div class="score-box">
-        <h3>Overall Implementation Score</h3>
-        <div class="score-value">', round(user_responses$imp, 2), '</div>
-        <p>MBS Participants Average: ', plot_data$Benchmark[plot_data$Category == "imp"], '</p>
-      </div>
-      
-      <div class="score-container">
-        <div class="score-box">
-          <h4>Implementation Actions</h4>
-          <div class="score-value">', round(user_responses$imp_imp, 2), '</div>
-          <p>Benchmark: ', plot_data$Benchmark[plot_data$Category == "imp_imp"], '</p>
-        </div>
-        <div class="score-box">
-          <h4>Seeking Feedback</h4>
-          <div class="score-value">', round(user_responses$imp_feedb, 2), '</div>
-          <p>Benchmark: ', plot_data$Benchmark[plot_data$Category == "imp_feedb"], '</p>
-        </div>
-      </div>
-    </div>
-    
-    <div class="section">
-      <h2>Need for Closure Assessment</h2>
-      <div class="score-box">
-        <h3>Overall Need for Closure Score</h3>
-        <div class="score-value">', round(user_responses$nfc_total, 2), '</div>
-        <p>MBS Participants Average: ', plot_data$Benchmark[plot_data$Category == "nfc_total"], '</p>
-      </div>
-      
-      <div class="score-container">
-        <div class="score-box">
-          <h4>Preference for Order</h4>
-          <div class="score-value">', round(user_responses$nfc_order, 2), '</div>
-          <p>Benchmark: ', plot_data$Benchmark[plot_data$Category == "nfc_order"], '</p>
-        </div>
-        <div class="score-box">
-          <h4>Preference for Predictability</h4>
-          <div class="score-value">', round(user_responses$nfc_predictability, 2), '</div>
-          <p>Benchmark: ', plot_data$Benchmark[plot_data$Category == "nfc_predictability"], '</p>
-        </div>
-        <div class="score-box">
-          <h4>Decisiveness</h4>
-          <div class="score-value">', round(user_responses$nfc_decisiveness, 2), '</div>
-          <p>Benchmark: ', plot_data$Benchmark[plot_data$Category == "nfc_decisiveness"], '</p>
-        </div>
-        <div class="score-box">
-          <h4>Discomfort with Ambiguity</h4>
-          <div class="score-value">', round(user_responses$nfc_ambiguity, 2), '</div>
-          <p>Benchmark: ', plot_data$Benchmark[plot_data$Category == "nfc_ambiguity"], '</p>
-        </div>
-        <div class="score-box">
-          <h4>Close-mindedness</h4>
-          <div class="score-value">', round(user_responses$nfc_closemindedness, 2), '</div>
-          <p>Benchmark: ', plot_data$Benchmark[plot_data$Category == "nfc_closemindedness"], '</p>
-        </div>
-      </div>
-      
-      <p><strong>Interpretation:</strong> Your Need for Closure reflects your preference for order, structure, and closure in your thinking and decision-making. Higher scores may indicate a preference for reaching agreements quickly, while lower scores may indicate comfort with ambiguity and willingness to keep options open longer during negotiations.</p>
-    </div>
-    
-    <div class="section">
-      <h2>Need for Cognition Assessment</h2>
-      <div class="score-box">
-        <h3>Need for Cognition Score</h3>
-        <div class="score-value">', round(user_responses$ncs_total, 2), '</div>
-        <p>MBS Participants Average: ', plot_data$Benchmark[plot_data$Category == "ncs_total"], '</p>
-      </div>
-      
-      <p><strong>Interpretation:</strong> Your Need for Cognition score reflects your tendency to engage in and enjoy thinking. Higher scores suggest you enjoy cognitive challenges and complex problem-solving, while lower scores suggest you may prefer simpler cognitive tasks.</p>
-    </div>
-    
-    <div class="section">
-      <h2>Social Value Orientation (SVO)</h2>
-      <div class="score-box">
-        <h3>Your SVO Results</h3>
-        <p><strong>SVO Angle:</strong> ', round(user_responses$SVO_angle, 2), ' degrees</p>
-        <p><strong>SVO Type:</strong> ', svo_type_label, '</p>
-      </div>
-      
-      <p><strong>What This Means:</strong> Your Social Value Orientation reflects how you balance outcomes for yourself versus others in interdependent situations. ',
-      if(svo_type_label == "Competitive") {
-        "You tend to maximise your own outcomes relative to others, potentially seeking advantage over others even at a cost to joint outcomes."
-      } else if(svo_type_label == "Individualistic") {
-        "You tend to maximise your own outcomes without strong regard for others' outcomes."
-      } else if(svo_type_label == "Prosocial") {
-        "You tend to maximise joint outcomes and equality in distributions, often focusing on win-win solutions."
-      } else if(svo_type_label == "Altruistic") {
-        "You tend to prioritise others' outcomes over your own."
-      } else {
-        "Your responses resulted in an unclassified orientation."
-      }, '</p>
-    </div>
-    
-    <div class="section">
-      <h2>Summary Table</h2>
-      <table>
-        <tr>
-          <th>Category</th>
-          <th>Your Score</th>
-          <th>MBS Participants Average</th>
-        </tr>')
-        
-  # Add all the scores from plot_data
-  for(i in 1:nrow(plot_data)) {
-    html_content <- paste0(html_content, '
-        <tr>
-          <td>', plot_data$Category[i], '</td>
-          <td>', round(plot_data$Your_Response[i], 2), '</td>
-          <td>', plot_data$Benchmark[i], '</td>
-        </tr>')
-  }
-  
-  html_content <- paste0(html_content, '
-      </table>
-    </div>
-    
-    <hr>
-    <p><em>This report was generated on ', format(Sys.time(), "%B %d, %Y"), '</em></p>
-    <p><em>For a more detailed report with charts and comprehensive analysis, please ensure all system dependencies are properly configured.</em></p>
-  </body>
-  </html>')
-  
-  # Write the HTML content to file
-  writeLines(html_content, report_path)
-  
-  # Check if the file was created successfully
-  if (file.exists(report_path)) {
-    message("Fallback HTML report created successfully")
-    return(report_path)
-  } else {
-    message("Failed to create fallback HTML report")
-    stop("Could not generate any report")
-  }
-}
-
-} # This closes the server function
 
 # Run the application 
 shinyApp(ui = ui, server = server)
