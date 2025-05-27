@@ -127,8 +127,8 @@ plot_data <- params$df
 planning_items <- params$planning_items
 bargaining_items <- params$bargaining_items
 implementation_items <- params$implementation_items
-nfc_items <- params$nfc_items  # Add this line
-ncs_items <- params$ncs_items  # Add this line
+nfc_items <- params$nfc_items   
+ncs_items <- params$ncs_items   
 ```
 
 # Planning
@@ -208,6 +208,294 @@ for(i in 1:4) {
 cowplot::plot_grid(plotlist = plots, ncol = 2, nrow = 2)
 ```
 </div>
+
+<div class="page-break"></div>
+
+# Bargaining
+
+The bargaining aspect of negotiation refers to the process of making offers and proposals. 
+
+<div class="chart-container">
+```{r, fig.align='center', fig.width = 8, fig.height = 4}
+title <- "Overall bargaining score"
+
+barg_df <- plot_data[1, ]
+
+barg_long <- barg_df %>%
+  pivot_longer(cols = c(Your_Response, Benchmark),
+               names_to = "Measure",
+               values_to = "Value")
+
+q5 <- ggplot(barg_long, aes(y = Value, x = Measure, fill = factor(Measure))) +
+  geom_bar(stat = "identity") + 
+  theme_minimal() + 
+  ylab("Score") + 
+  xlab("") +
+  ggtitle(title) +
+  theme(legend.position = "none", 
+        plot.title = element_text(hjust = 0.5, size = 14, face = "bold")) + 
+  geom_text(data = barg_long, aes(label = round(Value, 2)), vjust = -0.5) +
+  scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7), 
+                     limits = c(0, 8)) + 
+  scale_x_discrete(labels = c("Your_Response" = "You", "Benchmark" = "MBS Participants")) + 
+  scale_fill_manual(values = c("Benchmark" = "grey60", "Your_Response" = "#3498db"))
+
+q5
+```
+</div>
+
+## Bargaining dimensions
+
+<div class="chart-container">
+```{r, fig.align='center', fig.width = 10, fig.height = 12}
+# Create all four bargaining dimension charts
+titles <- c(
+  "Constructing and communicating\npersuasive arguments",
+  "Making a deal that includes\nall of your interests",
+  "Efforts to claim as much\nvalue as possible",
+  "Efforts to make both\nsides better off"
+)
+
+rows <- c(2, 3, 4, 5)
+plots <- list()
+
+for(i in 1:4) {
+  barg_df <- plot_data[rows[i], ]
+  
+  barg_long <- barg_df %>%
+    pivot_longer(cols = c(Your_Response, Benchmark),
+                 names_to = "Measure",
+                 values_to = "Value")
+  
+  plot <- ggplot(barg_long, aes(y = Value, x = Measure, fill = factor(Measure))) +
+    geom_bar(stat = "identity") + 
+    theme_minimal() + 
+    ylab("Score") + 
+    xlab("") +
+    ggtitle(titles[i]) +
+    theme(legend.position = "none",
+          plot.title = element_text(hjust = 0.5, size = 12)) + 
+    geom_text(data = barg_long, aes(label = round(Value, 2)), vjust = -0.5) +
+    scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7), 
+                       limits = c(0, 8)) + 
+    scale_x_discrete(labels = c("Your_Response" = "You", "Benchmark" = "MBS Participants")) + 
+    scale_fill_manual(values = c("Benchmark" = "grey60", "Your_Response" = "#3498db"))
+  
+  plots[[i]] <- plot
+}
+
+# Arrange plots in a 2x2 grid
+cowplot::plot_grid(plotlist = plots, ncol = 2, nrow = 2)
+```
+</div>
+
+<div class="page-break"></div>
+
+## Bargaining behaviours for reflection
+
+```{r, tidy = T}
+dybar <- bargaining_items
+
+dybar <- subset(dybar, Item != "Barg10")
+
+dybar <- dybar[1:25, ]
+ 
+dybar$q <- c("Have plans in advance to deal with counterproductive (e.g., negative, extreme, irrational) behaviour from your counterpart.",
+"Ask questions to learn about your counterpart.",
+"Test your understanding of what your counterpart was trying to say by repeating what they said.",
+"Try to focus on satisfying your underlying needs rather than a specific list of requirements.",
+"Spend time inventing options for mutual benefit.",
+"Keep track of how much value is created by systematically evaluating each offer against previous offers.",
+"Try to reach a deal that touches on all of the issues involved.",
+"Review the final terms with your counterpart to confirm mutual agreement about their interpretation.",
+"Make sure that you were fully understood.",
+"Check whether your arguments are persuasive.",
+"Check whether your counterpart is telling the truth.",
+"Check whether the counterpart is committed to making a deal with you.",
+"Make sure the help you are getting is appropriate for the task at hand.",
+"Justify each offer with a reason.",
+"Provide reasons that the counterpart should find plausible.",
+"Present facts that support your offer.",
+"Support your offer with facts.",
+"Refuse to make concessions.",
+"Insist on getting something every time you make a concession.",
+"Ask for a lot in your offers.",
+"Avoid making concessions.",
+"Use your power to make the counterpart concede",
+"Always try to get something in return for an accommodation you make",
+"Make ambitious offers.",
+"Downplay threats made by the counterpart")
+
+dybar$c_value <- c(4.21, 5.18, 4.74, 4.55, 5.21,
+                   4.15, 5.05, 5.35, 5.51, 4.71,
+                   4.83, 4.71, 4.87, 5.29, 5.59,
+                   5.65, 5.57, 3, 3.4, 3.68,
+                   3.29, 3.67, 3.98, 4.05, 3.98)
+
+dybar$Dimension <- c("Working for mutual benefit",
+"Working for mutual benefit",
+"Working for mutual benefit",
+"Working for mutual benefit",
+"Working for mutual benefit",
+"Working for mutual benefit",
+"Comprehensive",
+"Comprehensive",
+"Comprehensive",
+"Argumentation",
+"Argumentation",
+"Argumentation",
+"Argumentation",
+"Argumentation",
+"Argumentation",
+"Argumentation",
+"Argumentation",
+"Getting the most",
+"Getting the most",
+"Getting the most",
+"Getting the most",
+"Getting the most",
+"Getting the most",
+"Getting the most",
+"Getting the most")
+
+dybar <- dybar[, c(5, 3, 2, 4)]
+
+colnames(dybar) <- c("Dimension", "Behaviour", "You", "MBS Participants")
+
+dybar <- dybar[order(dybar$You, decreasing = TRUE), ]
+```
+
+**For further reflection, below are the three questions you rated highest:**
+
+```{r}
+kable(dybar[1:3, ], row.names = F)
+```
+
+**For further reflection, below are the three questions you rated lowest:**
+
+```{r}
+kable(dybar[23:25, ], row.names = F)
+```
+
+<div class="page-break"></div>
+
+# Implementation
+
+The implementation aspect of negotiation refer to actions that should be taken after reaching an agreement. 
+
+<div class="chart-container">
+```{r, fig.align='center', fig.width = 8, fig.height = 4}
+title <- "Overall implementation score"
+
+imp_df <- plot_data[6, ]
+
+imp_long <- imp_df %>%
+  pivot_longer(cols = c(Your_Response, Benchmark),
+               names_to = "Measure",
+               values_to = "Value")
+
+q10 <- ggplot(imp_long, aes(y = Value, x = Measure, fill = factor(Measure))) +
+  geom_bar(stat = "identity") + 
+  theme_minimal() + 
+  ylab("Score") + 
+  xlab("") +
+  ggtitle(title) +
+  theme(legend.position = "none", 
+        plot.title = element_text(hjust = 0.5, size = 14, face = "bold")) + 
+  geom_text(data = imp_long, aes(label = round(Value, 2)), vjust = -0.5) +
+  scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7), 
+                     limits = c(0, 8)) + 
+  scale_x_discrete(labels = c("Your_Response" = "You", "Benchmark" = "MBS Participants")) + 
+  scale_fill_manual(values = c("Benchmark" = "grey60", "Your_Response" = "#3498db"))
+
+q10
+```
+</div>
+
+## Implementation dimensions
+
+<div class="chart-container">
+```{r, fig.align='center', fig.width = 10, fig.height = 6}
+# Create both implementation dimension charts
+titles <- c(
+  "Efforts that help you and your counterpart\nto follow through on promises",
+  "Consulting more experienced negotiators\nto improve for the future"
+)
+
+rows <- c(8, 7)
+plots <- list()
+
+for(i in 1:2) {
+  imp_df <- plot_data[rows[i], ]
+  
+  imp_long <- imp_df %>%
+    pivot_longer(cols = c(Your_Response, Benchmark),
+                 names_to = "Measure",
+                 values_to = "Value")
+  
+  plot <- ggplot(imp_long, aes(y = Value, x = Measure, fill = factor(Measure))) +
+    geom_bar(stat = "identity") + 
+    theme_minimal() + 
+    ylab("Score") + 
+    xlab("") +
+    ggtitle(titles[i]) +
+    theme(legend.position = "none",
+          plot.title = element_text(hjust = 0.5, size = 12)) + 
+    geom_text(data = imp_long, aes(label = round(Value, 2)), vjust = -0.5) +
+    scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7), 
+                       limits = c(0, 8)) + 
+    scale_x_discrete(labels = c("Your_Response" = "You", "Benchmark" = "MBS Participants")) + 
+    scale_fill_manual(values = c("Benchmark" = "grey60", "Your_Response" = "#3498db"))
+  
+  plots[[i]] <- plot
+}
+
+# Arrange plots side by side
+cowplot::plot_grid(plotlist = plots, ncol = 2, nrow = 1)
+```
+</div>
+
+## Items for reflection
+
+```{r, tidy = T}
+dyimp <- implementation_items
+
+imp_subset <- c("Post1", "Post2", "Post3", "Post5", "Post6")
+
+dyimp <- subset(dyimp, Item %in% imp_subset)
+
+dyimp$q <- c("Express your commitment to the agreement.", 
+"Check that you have addressed your counterpart's key concerns.",
+"Agree on a plan to implement every aspect of the agreement.",
+"Periodically seek advice about negotiating from a more experienced negotiator.",
+"Periodically seek advice about negotiating from peers.")
+
+dyimp$Dimension <- c("Implementation",
+"Implementation",
+"Implementation",
+"Seeking feedback",
+"Seeking feedback")
+
+dyimp$c_value <- c(5.48, 4.97, 5.25, 4.1, 4.22)
+
+dyimp <- dyimp[, c(4, 3, 2, 5)]
+
+colnames(dyimp) <- c("Dimension", "Behaviour", "You", "MBS Participants")
+
+dyimp <- dyimp[order(dyimp$You, decreasing = TRUE), ]
+```
+
+**For further reflection, below are the two questions you rated highest:**
+
+```{r}
+kable(dyimp[1:2, ], row.names = F)
+```
+
+**For further reflection, below are the two questions you rated lowest:**
+
+```{r}
+kable(dyimp[4:5, ], row.names = F)
+```
 
 <div class="page-break"></div>
 
@@ -561,293 +849,6 @@ if(exists("plot_data") && "SVO_angle" %in% plot_data$Category) {
 
 Most people (approximately 60%) are classified as prosocial, while about 30% are individualistic, 5% competitive, and 5% altruistic. Your position relative to these distributions can help you understand your natural tendencies compared to others.
 
-<div class="page-break"></div>
-
-# Bargaining
-
-The bargaining aspect of negotiation refers to the process of making offers and proposals. 
-
-<div class="chart-container">
-```{r, fig.align='center', fig.width = 8, fig.height = 4}
-title <- "Overall bargaining score"
-
-barg_df <- plot_data[1, ]
-
-barg_long <- barg_df %>%
-  pivot_longer(cols = c(Your_Response, Benchmark),
-               names_to = "Measure",
-               values_to = "Value")
-
-q5 <- ggplot(barg_long, aes(y = Value, x = Measure, fill = factor(Measure))) +
-  geom_bar(stat = "identity") + 
-  theme_minimal() + 
-  ylab("Score") + 
-  xlab("") +
-  ggtitle(title) +
-  theme(legend.position = "none", 
-        plot.title = element_text(hjust = 0.5, size = 14, face = "bold")) + 
-  geom_text(data = barg_long, aes(label = round(Value, 2)), vjust = -0.5) +
-  scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7), 
-                     limits = c(0, 8)) + 
-  scale_x_discrete(labels = c("Your_Response" = "You", "Benchmark" = "MBS Participants")) + 
-  scale_fill_manual(values = c("Benchmark" = "grey60", "Your_Response" = "#3498db"))
-
-q5
-```
-</div>
-
-## Bargaining dimensions
-
-<div class="chart-container">
-```{r, fig.align='center', fig.width = 10, fig.height = 12}
-# Create all four bargaining dimension charts
-titles <- c(
-  "Constructing and communicating\npersuasive arguments",
-  "Making a deal that includes\nall of your interests",
-  "Efforts to claim as much\nvalue as possible",
-  "Efforts to make both\nsides better off"
-)
-
-rows <- c(2, 3, 4, 5)
-plots <- list()
-
-for(i in 1:4) {
-  barg_df <- plot_data[rows[i], ]
-  
-  barg_long <- barg_df %>%
-    pivot_longer(cols = c(Your_Response, Benchmark),
-                 names_to = "Measure",
-                 values_to = "Value")
-  
-  plot <- ggplot(barg_long, aes(y = Value, x = Measure, fill = factor(Measure))) +
-    geom_bar(stat = "identity") + 
-    theme_minimal() + 
-    ylab("Score") + 
-    xlab("") +
-    ggtitle(titles[i]) +
-    theme(legend.position = "none",
-          plot.title = element_text(hjust = 0.5, size = 12)) + 
-    geom_text(data = barg_long, aes(label = round(Value, 2)), vjust = -0.5) +
-    scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7), 
-                       limits = c(0, 8)) + 
-    scale_x_discrete(labels = c("Your_Response" = "You", "Benchmark" = "MBS Participants")) + 
-    scale_fill_manual(values = c("Benchmark" = "grey60", "Your_Response" = "#3498db"))
-  
-  plots[[i]] <- plot
-}
-
-# Arrange plots in a 2x2 grid
-cowplot::plot_grid(plotlist = plots, ncol = 2, nrow = 2)
-```
-</div>
-
-<div class="page-break"></div>
-
-## Bargaining behaviours for reflection
-
-```{r, tidy = T}
-dybar <- bargaining_items
-
-dybar <- subset(dybar, Item != "Barg10")
-
-dybar <- dybar[1:25, ]
- 
-dybar$q <- c("Have plans in advance to deal with counterproductive (e.g., negative, extreme, irrational) behaviour from your counterpart.",
-"Ask questions to learn about your counterpart.",
-"Test your understanding of what your counterpart was trying to say by repeating what they said.",
-"Try to focus on satisfying your underlying needs rather than a specific list of requirements.",
-"Spend time inventing options for mutual benefit.",
-"Keep track of how much value is created by systematically evaluating each offer against previous offers.",
-"Try to reach a deal that touches on all of the issues involved.",
-"Review the final terms with your counterpart to confirm mutual agreement about their interpretation.",
-"Make sure that you were fully understood.",
-"Check whether your arguments are persuasive.",
-"Check whether your counterpart is telling the truth.",
-"Check whether the counterpart is committed to making a deal with you.",
-"Make sure the help you are getting is appropriate for the task at hand.",
-"Justify each offer with a reason.",
-"Provide reasons that the counterpart should find plausible.",
-"Present facts that support your offer.",
-"Support your offer with facts.",
-"Refuse to make concessions.",
-"Insist on getting something every time you make a concession.",
-"Ask for a lot in your offers.",
-"Avoid making concessions.",
-"Use your power to make the counterpart concede",
-"Always try to get something in return for an accommodation you make",
-"Make ambitious offers.",
-"Downplay threats made by the counterpart")
-
-dybar$c_value <- c(4.21, 5.18, 4.74, 4.55, 5.21,
-                   4.15, 5.05, 5.35, 5.51, 4.71,
-                   4.83, 4.71, 4.87, 5.29, 5.59,
-                   5.65, 5.57, 3, 3.4, 3.68,
-                   3.29, 3.67, 3.98, 4.05, 3.98)
-
-dybar$Dimension <- c("Working for mutual benefit",
-"Working for mutual benefit",
-"Working for mutual benefit",
-"Working for mutual benefit",
-"Working for mutual benefit",
-"Working for mutual benefit",
-"Comprehensive",
-"Comprehensive",
-"Comprehensive",
-"Argumentation",
-"Argumentation",
-"Argumentation",
-"Argumentation",
-"Argumentation",
-"Argumentation",
-"Argumentation",
-"Argumentation",
-"Getting the most",
-"Getting the most",
-"Getting the most",
-"Getting the most",
-"Getting the most",
-"Getting the most",
-"Getting the most",
-"Getting the most")
-
-dybar <- dybar[, c(5, 3, 2, 4)]
-
-colnames(dybar) <- c("Dimension", "Behaviour", "You", "MBS Participants")
-
-dybar <- dybar[order(dybar$You, decreasing = TRUE), ]
-```
-
-**For further reflection, below are the three questions you rated highest:**
-
-```{r}
-kable(dybar[1:3, ], row.names = F)
-```
-
-**For further reflection, below are the three questions you rated lowest:**
-
-```{r}
-kable(dybar[23:25, ], row.names = F)
-```
-
-<div class="page-break"></div>
-
-# Implementation
-
-The implementation aspect of negotiation refer to actions that should be taken after reaching an agreement. 
-
-<div class="chart-container">
-```{r, fig.align='center', fig.width = 8, fig.height = 4}
-title <- "Overall implementation score"
-
-imp_df <- plot_data[6, ]
-
-imp_long <- imp_df %>%
-  pivot_longer(cols = c(Your_Response, Benchmark),
-               names_to = "Measure",
-               values_to = "Value")
-
-q10 <- ggplot(imp_long, aes(y = Value, x = Measure, fill = factor(Measure))) +
-  geom_bar(stat = "identity") + 
-  theme_minimal() + 
-  ylab("Score") + 
-  xlab("") +
-  ggtitle(title) +
-  theme(legend.position = "none", 
-        plot.title = element_text(hjust = 0.5, size = 14, face = "bold")) + 
-  geom_text(data = imp_long, aes(label = round(Value, 2)), vjust = -0.5) +
-  scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7), 
-                     limits = c(0, 8)) + 
-  scale_x_discrete(labels = c("Your_Response" = "You", "Benchmark" = "MBS Participants")) + 
-  scale_fill_manual(values = c("Benchmark" = "grey60", "Your_Response" = "#3498db"))
-
-q10
-```
-</div>
-
-## Implementation dimensions
-
-<div class="chart-container">
-```{r, fig.align='center', fig.width = 10, fig.height = 6}
-# Create both implementation dimension charts
-titles <- c(
-  "Efforts that help you and your counterpart\nto follow through on promises",
-  "Consulting more experienced negotiators\nto improve for the future"
-)
-
-rows <- c(8, 7)
-plots <- list()
-
-for(i in 1:2) {
-  imp_df <- plot_data[rows[i], ]
-  
-  imp_long <- imp_df %>%
-    pivot_longer(cols = c(Your_Response, Benchmark),
-                 names_to = "Measure",
-                 values_to = "Value")
-  
-  plot <- ggplot(imp_long, aes(y = Value, x = Measure, fill = factor(Measure))) +
-    geom_bar(stat = "identity") + 
-    theme_minimal() + 
-    ylab("Score") + 
-    xlab("") +
-    ggtitle(titles[i]) +
-    theme(legend.position = "none",
-          plot.title = element_text(hjust = 0.5, size = 12)) + 
-    geom_text(data = imp_long, aes(label = round(Value, 2)), vjust = -0.5) +
-    scale_y_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7), 
-                       limits = c(0, 8)) + 
-    scale_x_discrete(labels = c("Your_Response" = "You", "Benchmark" = "MBS Participants")) + 
-    scale_fill_manual(values = c("Benchmark" = "grey60", "Your_Response" = "#3498db"))
-  
-  plots[[i]] <- plot
-}
-
-# Arrange plots side by side
-cowplot::plot_grid(plotlist = plots, ncol = 2, nrow = 1)
-```
-</div>
-
-## Items for reflection
-
-```{r, tidy = T}
-dyimp <- implementation_items
-
-imp_subset <- c("Post1", "Post2", "Post3", "Post5", "Post6")
-
-dyimp <- subset(dyimp, Item %in% imp_subset)
-
-dyimp$q <- c("Express your commitment to the agreement.", 
-"Check that you have addressed your counterpart's key concerns.",
-"Agree on a plan to implement every aspect of the agreement.",
-"Periodically seek advice about negotiating from a more experienced negotiator.",
-"Periodically seek advice about negotiating from peers.")
-
-dyimp$Dimension <- c("Implementation",
-"Implementation",
-"Implementation",
-"Seeking feedback",
-"Seeking feedback")
-
-dyimp$c_value <- c(5.48, 4.97, 5.25, 4.1, 4.22)
-
-dyimp <- dyimp[, c(4, 3, 2, 5)]
-
-colnames(dyimp) <- c("Dimension", "Behaviour", "You", "MBS Participants")
-
-dyimp <- dyimp[order(dyimp$You, decreasing = TRUE), ]
-```
-
-**For further reflection, below are the two questions you rated highest:**
-
-```{r}
-kable(dyimp[1:2, ], row.names = F)
-```
-
-**For further reflection, below are the two questions you rated lowest:**
-
-```{r}
-kable(dyimp[4:5, ], row.names = F)
-```
 
 ---
 

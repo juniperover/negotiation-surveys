@@ -1056,67 +1056,58 @@ server <- function(input, output, session) {
 # Helper function to generate report
 generate_report <- function(user_responses) {
   # Define benchmarks
-  benchmarks <- data.frame(
-    Category = c("pre_count", "pre_arena", "pre_preps", "pre_imp", "pre",
-                 "barg_mut", "barg_com", "barg_arg", "barg_get", "barg",
-                 "imp_imp", "imp_feedb", "imp",
-                # New NFC categories
-                 "nfc_order", "nfc_predictability", "nfc_decisiveness", 
-                 "nfc_ambiguity", "nfc_closemindedness", "nfc_total",
-                # New NCS category
-                 "ncs_total",
-                # SVO
-                 "SVO_angle"),
-    Benchmark = c(4.4, 4.61, 5.1, 4.37, 4.66, 
-                  4.67, 5.28, 5.13, 3.62, 4.55,
-                  5.26, 4.16, 4.82,
-                  # New NFC benchmarks (replace with actual benchmarks if available)
-                  4.2, 3.9, 4.1, 4.3, 3.8, 4.05,
-                  # NCS benchmark (replace with actual benchmark if available)
-                  3.5,
-                  # SVO angle benchmark (average is typically around 30-35 degrees - prosocial)
-                  32.1)
-  )
+        benchmarks <- data.frame(
+          Category = c("barg", "barg_arg", "barg_com", "barg_get", "barg_mut",
+                       "imp", "imp_feedb", "imp_imp", 
+                       "pre", "pre_count", "pre_arena", "pre_preps", "pre_imp",
+                       "nfc_order", "nfc_predictability", "nfc_decisiveness", 
+                       "nfc_ambiguity", "nfc_closemindedness", "nfc_total",
+                       "ncs_total",
+                       "SVO_angle"),
+          Benchmark = c(4.55, 5.13, 5.28, 3.62, 4.67,  # Bargaining benchmarks
+                        4.82, 4.16, 5.26,               # Implementation benchmarks  
+                        4.66, 4.4, 4.61, 5.1, 4.37,    # Planning benchmarks
+                        4.2, 3.9, 4.1, 4.3, 3.8, 4.05, # NFC benchmarks
+                        3.5,                             # NCS benchmark
+                        32.1)                            # SVO benchmark
+        )
   
-  # Prepare data for the report
-  summary_scores <- data.frame(
-    Category = c("pre_count", "pre_arena", "pre_preps", "pre_imp", "pre",
-                 "barg_mut", "barg_com", "barg_arg", "barg_get", "barg",
-                 "imp_imp", "imp_feedb", "imp",
-                # New NFC categories
-                 "nfc_order", "nfc_predictability", "nfc_decisiveness", 
-                 "nfc_ambiguity", "nfc_closemindedness", "nfc_total",
-                # New NCS category
-                 "ncs_total",
-                # SVO
-                 "SVO_angle"),
-    Your_Response = c(
-      user_responses$pre_count,
-      user_responses$pre_arena,
-      user_responses$pre_preps,
-      user_responses$pre_imp,
-      user_responses$pre,
-      user_responses$barg_mut,
-      user_responses$barg_com,
-      user_responses$barg_arg,
-      user_responses$barg_get,
-      user_responses$barg,
-      user_responses$imp_imp,
-      user_responses$imp_feedb,
-      user_responses$imp,
-      # New NFC responses
-      user_responses$nfc_order,
-      user_responses$nfc_predictability,
-      user_responses$nfc_decisiveness, 
-      user_responses$nfc_ambiguity,
-      user_responses$nfc_closemindedness,
-      user_responses$nfc_total,
-      # New NCS response
-      user_responses$ncs_total,
-      # SVO angle
-      user_responses$SVO_angle
-    )
+# Prepare data for the report (REORDERED to match Rmd expectations)
+summary_scores <- data.frame(
+  Category = c("barg", "barg_arg", "barg_com", "barg_get", "barg_mut",  # Bargaining categories first
+               "imp", "imp_feedb", "imp_imp",                            # Implementation categories  
+               "pre", "pre_count", "pre_arena", "pre_preps", "pre_imp",  # Planning categories
+               "nfc_order", "nfc_predictability", "nfc_decisiveness",    # NFC categories
+               "nfc_ambiguity", "nfc_closemindedness", "nfc_total",
+               "ncs_total",                                               # NCS category
+               "SVO_angle"),                                              # SVO category
+  Your_Response = c(
+    user_responses$barg,         # Row 1: Overall bargaining
+    user_responses$barg_arg,     # Row 2: Argumentation  
+    user_responses$barg_com,     # Row 3: Comprehensive
+    user_responses$barg_get,     # Row 4: Getting the most
+    user_responses$barg_mut,     # Row 5: Mutual benefit
+    user_responses$imp,          # Row 6: Overall implementation
+    user_responses$imp_feedb,    # Row 7: Seeking feedback
+    user_responses$imp_imp,      # Row 8: Implementation follow-through
+    user_responses$pre,          # Row 9: Overall planning
+    user_responses$pre_count,    # Row 10: Understanding counterpart
+    user_responses$pre_arena,    # Row 11: Setting arena
+    user_responses$pre_preps,    # Row 12: Preparing self
+    user_responses$pre_imp,      # Row 13: Understanding impasse
+    # NFC responses
+    user_responses$nfc_order,
+    user_responses$nfc_predictability,
+    user_responses$nfc_decisiveness, 
+    user_responses$nfc_ambiguity,
+    user_responses$nfc_closemindedness,
+    user_responses$nfc_total,
+    # NCS response
+    user_responses$ncs_total,
+    # SVO angle
+    user_responses$SVO_angle
   )
+)
   
   # Create separate lists for planning, bargaining, and implementation items
   planning_items <- user_responses %>%
@@ -1165,7 +1156,7 @@ generate_report <- function(user_responses) {
   # Merge with benchmarks
   df <- merge(summary_scores, benchmarks, by = "Category")
   
-  # RETURN THE DATA (this was missing!)
+  # RETURN THE DATA  
   return(list(
     df = df,
     planning_items = planning_items,
