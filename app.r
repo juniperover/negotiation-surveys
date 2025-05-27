@@ -1034,8 +1034,9 @@ server <- function(input, output, session) {
         
         shinyjs::hide("loading")
         
-        # Update the submit button text
+        # Update the submit button text and set the report reactive
         shinyjs::html("submit", "Report Generated")
+        report("ready")  
         
       }, error = function(e) {
         # Show error alert
