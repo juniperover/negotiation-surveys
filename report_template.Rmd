@@ -209,6 +209,79 @@ cowplot::plot_grid(plotlist = plots, ncol = 2, nrow = 2)
 ```
 </div>
 
+### Planning behaviours for reflection
+
+```{r, tidy = T}
+dypre <- planning_items
+
+dypre <- subset(dypre, Item != "Plan20" & Item != "Plan21")
+
+dypre$q <- c("Spend time thinking about your counterpart's goals.",
+             "Spend time studying your counterpart's tactics and patterns of behaviour in similar situations.",
+             "Spend time studying the counterpart's emotional state as they enter into negotiations.",
+             "Spend time researching whether your counterpart might value things differently than you.",
+             "Spend time researching the counterpart's point of view on the situation.",
+             "Exhaust every source of information at your disposal (including, but not limited to, family, friends, co-workers, institutions, the library, and the Internet).",
+             "Research alternative outcomes that satisfy the need of the parties (i.e., find alternative arrangements that meet your and your counterpart's needs).",
+             "Communicate in advance your intention to negotiate.",
+             "Make sure all relevant parties will be included in the negotiation.",
+             "Establish a shared perception of the situation that requires resolution.",
+             "Attempt to remove or minimise distractions that could draw attention away from the negotiation.",
+             "Spend time researching the events leading to the negotiation.",
+             "Spend time thinking about your goals.",
+             "Prioritise the goals for the negotiation.",
+             "Create a table or list of what you value most to what you value least.",
+             "Ensure that you have the necessary resources to follow through with the deal that you reach.",
+             "Maintain competence in the skills needed to analyse the deal (e.g., technical evaluation, accounting, developing relationships, etc.).",
+             "Understand your no-deal options.",
+             "Understand your counterpart's no-deal options.")
+
+dypre$c_value <- c(5.02, 4.02, 4.19, 4.08, 4.59,
+                   4.22, 4.9, 4.59, 5.03, 5,
+                   4.25, 4.34, 6.03, 5.5, 4.1,
+                   5, 4.9, 4.86, 3.94)
+
+dypre$Dimension <- c("Understanding the counterpart",
+             "Understanding the counterpart",
+             "Understanding the counterpart",
+             "Understanding the counterpart",
+             "Understanding the counterpart",
+             "Setting the arena",
+             "Setting the arena",
+             "Setting the arena",
+             "Setting the arena",
+             "Setting the arena",
+             "Setting the arena",
+             "Setting the arena",
+             "Preparing the self",
+             "Preparing the self",
+             "Preparing the self",
+             "Preparing the self",
+             "Preparing the self",
+             "Understanding the impasse",
+             "Understanding the impasse")
+
+dypre <- dypre[, c(5, 3, 2, 4)]
+
+colnames(dypre) <- c("Dimension", "Behaviour", "You", "MBS Participants")
+
+dypre <- dypre[order(dypre$You, decreasing = TRUE), ]
+```
+
+**For further reflection, below are the three questions you rated highest:**
+
+```{r}
+kable(dypre[1:3, ], row.names = F)
+```
+
+**For further reflection, below are the three questions you rated lowest:**
+
+```{r}
+kable(dypre[17:19, ], row.names = F)
+```
+
+
+
 <div class="page-break"></div>
 
 # Bargaining
@@ -634,77 +707,6 @@ Your Need for Cognition can influence your negotiation approach in several ways:
 - You might enjoy the intellectual challenge of negotiation, including analysing the other party's interests, crafting persuasive arguments, and finding creative solutions that satisfy both parties.
 
 - Understanding your Need for Cognition can help you recognise when you might benefit from more or less cognitive engagement in negotiations, depending on the situation.
-
-### Planning behaviours for reflection
-
-```{r, tidy = T}
-dypre <- planning_items
-
-dypre <- subset(dypre, Item != "Plan20" & Item != "Plan21")
-
-dypre$q <- c("Spend time thinking about your counterpart's goals.",
-             "Spend time studying your counterpart's tactics and patterns of behaviour in similar situations.",
-             "Spend time studying the counterpart's emotional state as they enter into negotiations.",
-             "Spend time researching whether your counterpart might value things differently than you.",
-             "Spend time researching the counterpart's point of view on the situation.",
-             "Exhaust every source of information at your disposal (including, but not limited to, family, friends, co-workers, institutions, the library, and the Internet).",
-             "Research alternative outcomes that satisfy the need of the parties (i.e., find alternative arrangements that meet your and your counterpart's needs).",
-             "Communicate in advance your intention to negotiate.",
-             "Make sure all relevant parties will be included in the negotiation.",
-             "Establish a shared perception of the situation that requires resolution.",
-             "Attempt to remove or minimise distractions that could draw attention away from the negotiation.",
-             "Spend time researching the events leading to the negotiation.",
-             "Spend time thinking about your goals.",
-             "Prioritise the goals for the negotiation.",
-             "Create a table or list of what you value most to what you value least.",
-             "Ensure that you have the necessary resources to follow through with the deal that you reach.",
-             "Maintain competence in the skills needed to analyse the deal (e.g., technical evaluation, accounting, developing relationships, etc.).",
-             "Understand your no-deal options.",
-             "Understand your counterpart's no-deal options.")
-
-dypre$c_value <- c(5.02, 4.02, 4.19, 4.08, 4.59,
-                   4.22, 4.9, 4.59, 5.03, 5,
-                   4.25, 4.34, 6.03, 5.5, 4.1,
-                   5, 4.9, 4.86, 3.94)
-
-dypre$Dimension <- c("Understanding the counterpart",
-             "Understanding the counterpart",
-             "Understanding the counterpart",
-             "Understanding the counterpart",
-             "Understanding the counterpart",
-             "Setting the arena",
-             "Setting the arena",
-             "Setting the arena",
-             "Setting the arena",
-             "Setting the arena",
-             "Setting the arena",
-             "Setting the arena",
-             "Preparing the self",
-             "Preparing the self",
-             "Preparing the self",
-             "Preparing the self",
-             "Preparing the self",
-             "Understanding the impasse",
-             "Understanding the impasse")
-
-dypre <- dypre[, c(5, 3, 2, 4)]
-
-colnames(dypre) <- c("Dimension", "Behaviour", "You", "MBS Participants")
-
-dypre <- dypre[order(dypre$You, decreasing = TRUE), ]
-```
-
-**For further reflection, below are the three questions you rated highest:**
-
-```{r}
-kable(dypre[1:3, ], row.names = F)
-```
-
-**For further reflection, below are the three questions you rated lowest:**
-
-```{r}
-kable(dypre[17:19, ], row.names = F)
-```
 
 <div class="page-break"></div>
 
