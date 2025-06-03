@@ -1161,8 +1161,9 @@ summary_scores <- data.frame(
     pivot_longer(cols = starts_with("SVO"), names_to = "Item", values_to = "Value")
   
   # Merge with benchmarks
-  df <- merge(summary_scores, benchmarks, by = "Category")
-
+  #df <- merge(summary_scores, benchmarks, by = "Category") <--replaced this line because it was sorting improperly.
+  df <- summary_scores %>%
+  left_join(benchmarks, by = "Category")
 
 #  DEBUG CODE:
 message("Final df structure:")
