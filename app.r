@@ -1021,7 +1021,14 @@ server <- function(input, output, session) {
             TRUE ~ NA_real_
           )
         )
-      
+
+#  DEBUG CODE:
+message("Debugging scores:")
+message("barg score: ", user_responses$barg)
+message("pre score: ", user_responses$pre)
+message("imp score: ", user_responses$imp)
+
+
       shinyjs::show("loading")
       
       tryCatch({
@@ -1155,7 +1162,15 @@ summary_scores <- data.frame(
   
   # Merge with benchmarks
   df <- merge(summary_scores, benchmarks, by = "Category")
-  
+
+
+#  DEBUG CODE:
+message("Final df structure:")
+print(head(df, 10))
+message("Row 1 of df (should be barg):")
+print(df[1, ])
+
+
   # RETURN THE DATA  
   return(list(
     df = df,
