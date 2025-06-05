@@ -610,10 +610,17 @@ sidebarLayout(
     
     tags$div(id = "loading", style = "display: none;",
              tags$p("Processing your responses and generating report. Please wait...")
-    )
+    ),
+    
+    # DEBUG section
+         tags$div(id = "svo_debug", style = "display: none; background-color: #f0f0f0; padding: 15px; margin: 15px; border: 1px solid #ccc;",
+         h4("SVO Debug Information:"),
+         tableOutput("svo_debug_table")
+)
   )  # This closes mainPanel
 )  # This closes sidebarLayout
 )  # This closes fluidPage
+
 
 # Server logic
 server <- function(input, output, session) {
@@ -1023,10 +1030,25 @@ server <- function(input, output, session) {
         )
 
 #  DEBUG CODE:
-message("Debugging scores:")
-message("barg score: ", user_responses$barg)
-message("pre score: ", user_responses$pre)
-message("imp score: ", user_responses$imp)
+
+output$svo_debug_table <- renderTable({
+  if (exists("user_responses")) {
+    data.frame(
+      Metric = c("Mean Self", "Mean Other", "SVO Angle", "SVO Type", 
+                 "Self Values", "Other Values"),
+      Value = c(
+        round(user_responses$SVO_mean_first_six_Items_Self, 2),
+        round(user_responses$SVO_mean_first_six_Items_Other, 2), 
+        round(user_responses$SVO_angle, 2),
+        user_responses$SVO_type,
+        paste(svo_self_values, collapse = ", "),
+        paste(svo_other_values, collapse = ", ")
+      )
+    )
+  }
+})
+
+shinyjs::show("svo_debug")
 
 
       shinyjs::show("loading")
