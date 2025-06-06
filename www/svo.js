@@ -40,77 +40,94 @@ function updateSVOValues(item, value) {
   const valuesContainer = document.getElementById('svo_values_' + item);
   valuesContainer.innerHTML = '';
   
-  // Create table without labels - just the values and ticks
-  const table = document.createElement('table');
-  table.style.width = '100%';
-  table.style.borderCollapse = 'collapse';
+  // Create container div with proper alignment
+  const container = document.createElement('div');
+  container.style.width = '100%';
+  container.style.position = 'relative';
   
-  // Create top row for self values
-  const topRow = document.createElement('tr');
+  // Create table for self values (You Receive)
+  const selfTable = document.createElement('table');
+  selfTable.style.width = '100%';
+  selfTable.style.borderCollapse = 'collapse';
+  selfTable.style.marginBottom = '5px';
   
-  // Add cells for each value
+  const selfRow = document.createElement('tr');
+  
+  // Add cells for self values with proper width distribution
   for (let i = 0; i < 9; i++) {
     const cell = document.createElement('td');
     cell.style.textAlign = 'center';
-    cell.style.padding = '5px';
+    cell.style.padding = '3px 2px';
+    cell.style.width = '11.11%'; // Equal distribution for 9 columns
+    cell.style.fontSize = '14px';
     cell.textContent = svoValues[item].self[i];
     
     // Highlight the selected value
     if (i === index) {
       cell.style.fontWeight = 'bold';
       cell.style.color = '#007bff';
+      cell.style.backgroundColor = '#e3f2fd';
+      cell.style.borderRadius = '3px';
     }
     
-    topRow.appendChild(cell);
+    selfRow.appendChild(cell);
   }
   
-  // Create middle row for tick marks
-  const middleRow = document.createElement('tr');
-  middleRow.style.height = '20px';
+  selfTable.appendChild(selfRow);
   
-  // Add tick mark cells
+  // Create table for other values (Other Receives)
+  const otherTable = document.createElement('table');
+  otherTable.style.width = '100%';
+  otherTable.style.borderCollapse = 'collapse';
+  otherTable.style.marginTop = '5px';
+  
+  const otherRow = document.createElement('tr');
+  
+  // Add cells for other values with proper width distribution
   for (let i = 0; i < 9; i++) {
     const cell = document.createElement('td');
     cell.style.textAlign = 'center';
-    cell.style.position = 'relative';
-    
-    // Create the tick mark
-    const tick = document.createElement('div');
-    tick.style.width = '1px';
-    tick.style.height = '20px';
-    tick.style.backgroundColor = i === index ? '#007bff' : '#999';
-    tick.style.margin = '0 auto';
-    
-    cell.appendChild(tick);
-    middleRow.appendChild(cell);
-  }
-  
-  // Create bottom row for other values
-  const bottomRow = document.createElement('tr');
-  
-  // Add cells for each value
-  for (let i = 0; i < 9; i++) {
-    const cell = document.createElement('td');
-    cell.style.textAlign = 'center';
-    cell.style.padding = '5px';
+    cell.style.padding = '3px 2px';
+    cell.style.width = '11.11%'; // Equal distribution for 9 columns
+    cell.style.fontSize = '14px';
     cell.textContent = svoValues[item].other[i];
     
     // Highlight the selected value
     if (i === index) {
       cell.style.fontWeight = 'bold';
       cell.style.color = '#007bff';
+      cell.style.backgroundColor = '#e3f2fd';
+      cell.style.borderRadius = '3px';
     }
     
-    bottomRow.appendChild(cell);
+    otherRow.appendChild(cell);
   }
   
-  // Add all rows to the table
-  table.appendChild(topRow);
-  table.appendChild(middleRow);
-  table.appendChild(bottomRow);
+  otherTable.appendChild(otherRow);
   
-  // Add the table to the values container
-  valuesContainer.appendChild(table);
+  // Add tables to container
+  container.appendChild(selfTable);
+  container.appendChild(otherTable);
+  
+  // Add the container to the values container
+  valuesContainer.appendChild(container);
+}
+
+// Function to align slider with value tables
+function alignSlider(item) {
+  const slider = document.getElementById('svo' + item);
+  if (slider) {
+    // Set slider to align with the 9-position grid
+    slider.style.width = '100%';
+    slider.style.margin = '10px 0';
+    
+    // Ensure the slider handle aligns with the value positions
+    const sliderContainer = slider.parentElement;
+    if (sliderContainer) {
+      sliderContainer.style.padding = '0';
+      sliderContainer.style.margin = '0';
+    }
+  }
 }
 
 // Initialize all sliders when the document is ready
@@ -119,9 +136,45 @@ $(document).ready(function() {
     // Initialize with default value
     updateSVOValues(i, 5);
     
+    // Align slider with value tables
+    alignSlider(i);
+    
     // Add change listener
     $('#svo' + i).on('change', function(e) {
       updateSVOValues(i, parseInt(e.target.value));
     });
+    
+    // Also listen for input events for real-time updates
+    $('#svo' + i).on('input', function(e) {
+      updateSVOValues(i, parseInt(e.target.value));
+    });
   }
+});
+
+// Additional CSS to ensure proper alignment
+$(document).ready(function() {
+  // Add custom CSS for slider alignment
+  const style = document.createElement('style');
+  style.textContent = `
+    .svo-slider-container .form-group {
+      margin-bottom: 0 !important;
+    }
+    
+    .svo-slider-container .irs {
+      margin: 0 !important;
+    }
+    
+    .svo-slider-container .irs-line {
+      margin: 0 auto !important;
+    }
+    
+    .svo-values table {
+      table-layout: fixed !important;
+    }
+    
+    .svo-slider-container {
+      padding: 0 !important;
+    }
+  `;
+  document.head.appendChild(style);
 });
