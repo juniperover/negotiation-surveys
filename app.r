@@ -564,40 +564,45 @@ lapply(1:6, function(i) {
   tagList(
     h5(paste("SVO Item", i)),
     
+    # Hidden inputs FIRST
+    tags$div(style = "display: none;",
+            tags$input(id = paste0("svo", i, "_self_value"), 
+                       type = "hidden", 
+                       value = "50"),
+            tags$input(id = paste0("svo", i, "_other_value"), 
+                       type = "hidden", 
+                       value = "50")
+    ),
+    
     tags$div(class = "svo-slider-container",
-      # First: "You Receive" label
+      # "You Receive" label
       tags$div(class = "svo-labels svo-top-label",
               tags$div(class = "svo-label", "You Receive")
       ),
       
-      # Second: Values display (this will show both self and other values)
-      tags$div(id = paste0("svo_values_", i), class = "svo-values"),
-      
-      # Third: The slider (positioned between the value rows)
-      sliderInput(
-        inputId = paste0("svo", i),
-        label = NULL,
-        min = 1,
-        max = 9,
-        value = 5,
-        step = 1,
-        width = "100%",
-        ticks = FALSE
+      # Values display AND slider container
+      tags$div(class = "svo-values-and-slider",
+        # Values display 
+        tags$div(id = paste0("svo_values_", i), class = "svo-values"),
+        
+        # The slider (will be positioned between the value rows)
+        tags$div(class = "svo-slider-wrapper",
+          sliderInput(
+            inputId = paste0("svo", i),
+            label = NULL,
+            min = 1,
+            max = 9,
+            value = 5,
+            step = 1,
+            width = "100%",
+            ticks = FALSE
+          )
+        )
       ),
       
-      # Fourth: "Other Receives" label  
+      # "Other Receives" label  
       tags$div(class = "svo-labels svo-bottom-label",
               tags$div(class = "svo-label", "Other Receives")
-      ),
-      
-      # Hidden inputs to store the actual values
-      tags$div(style = "display: none;",
-              tags$input(id = paste0("svo", i, "_self_value"), 
-                         type = "hidden", 
-                         value = ""),
-              tags$input(id = paste0("svo", i, "_other_value"), 
-                         type = "hidden", 
-                         value = "")
       )
     )
   )
