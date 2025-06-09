@@ -562,7 +562,7 @@ sidebarLayout(
 # SVO Slider items with corrected structure
 lapply(1:6, function(i) {
   tagList(
-    h5(paste("SVO Item", i)),
+    h5(paste("Question", i)),
     
     # Hidden inputs FIRST
     tags$div(style = "display: none;",
@@ -621,10 +621,10 @@ lapply(1:6, function(i) {
     ),
     
     # DEBUG section
-         tags$div(id = "svo_debug", style = "display: none; background-color: #f0f0f0; padding: 15px; margin: 15px; border: 1px solid #ccc;",
-         h4("SVO Debug Information:"),
-         tableOutput("svo_debug_table")
-)
+    #     tags$div(id = "svo_debug", style = "display: none; background-color: #f0f0f0; padding: 15px; margin: 15px; border: 1px solid #ccc;",
+    #     h4("SVO Debug Information:"),
+    #     tableOutput("svo_debug_table")
+#)
   )  # This closes mainPanel
 )  # This closes sidebarLayout
 )  # This closes fluidPage
@@ -1039,24 +1039,24 @@ server <- function(input, output, session) {
 
 #  DEBUG CODE:
 
-output$svo_debug_table <- renderTable({
-  if (exists("user_responses")) {
-    data.frame(
-      Metric = c("Mean Self", "Mean Other", "SVO Angle", "SVO Type", 
-                 "Self Values", "Other Values"),
-      Value = c(
-        round(user_responses$SVO_mean_first_six_Items_Self, 2),
-        round(user_responses$SVO_mean_first_six_Items_Other, 2), 
-        round(user_responses$SVO_angle, 2),
-        user_responses$SVO_type,
-        paste(svo_self_values, collapse = ", "),
-        paste(svo_other_values, collapse = ", ")
-      )
-    )
-  }
-})
+#output$svo_debug_table <- renderTable({
+#  if (exists("user_responses")) {
+#    data.frame(
+#      Metric = c("Mean Self", "Mean Other", "SVO Angle", "SVO Type", 
+#                 "Self Values", "Other Values"),
+#      Value = c(
+#        round(user_responses$SVO_mean_first_six_Items_Self, 2),
+#        round(user_responses$SVO_mean_first_six_Items_Other, 2), 
+#        round(user_responses$SVO_angle, 2),
+#        user_responses$SVO_type,
+#        paste(svo_self_values, collapse = ", "),
+#        paste(svo_other_values, collapse = ", ")
+#      )
+#    )
+#  }
+#})
 
-shinyjs::show("svo_debug")
+#shinyjs::show("svo_debug")
 
 
       shinyjs::show("loading")
@@ -1196,10 +1196,10 @@ summary_scores <- data.frame(
   left_join(benchmarks, by = "Category")
 
 #  DEBUG CODE:
-message("Final df structure:")
-print(head(df, 10))
-message("Row 1 of df (should be barg):")
-print(df[1, ])
+#message("Final df structure:")
+#print(head(df, 10))
+#message("Row 1 of df (should be barg):")
+#print(df[1, ])
 
 
   # RETURN THE DATA  

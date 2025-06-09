@@ -1,5 +1,5 @@
 ---
-title: "Negotiation Behaviours and Attitudes Report"
+title: "Negotiation behaviours and attitudes report"
 params:
   name: NA
   df: NA
@@ -531,7 +531,7 @@ cowplot::plot_grid(plotlist = plots, ncol = 2, nrow = 1)
 ```
 </div>
 
-## Items for reflection
+## Implementation items for reflection
 
 ```{r, tidy = T}
 dyimp <- implementation_items
@@ -575,11 +575,11 @@ kable(dyimp[4:5, ], row.names = F)
 
 <div class="page-break"></div>
 
-# Need for Closure Assessment
+# Need for Closure assessment
 
 This section shows your responses to the Need for Closure scale, which measures your preference for order, structure, and closure in your thinking and decision-making. It is common to have somewhat high need for closure, but if your score is very high, that might indicate that you face challenges remaining open and keeping negotiations going long enough to maximise value creation---or coming back to re-discuss issues that had been tentatively decided.
 
-## Your Need for Closure Profile
+## Your Need for Closure profile
 
 <div class="chart-container">
 ```{r nfc_chart, fig.width=10, fig.height=6, fig.align='center'}
@@ -638,7 +638,7 @@ if(exists("nfc_df") && nrow(nfc_df) > 0) {
 ```
 </div>
 
-### How This Relates to Negotiation
+### How this relates to negotiation
 
 Your Need for Closure can influence your negotiation style in several ways:
 
@@ -648,11 +648,11 @@ Your Need for Closure can influence your negotiation style in several ways:
 
 <div class="page-break"></div>
 
-# Need for Cognition Assessment
+# Need for Cognition assessment
 
 This section shows your responses to the Need for Cognition scale, which measures your tendency to engage in and enjoy thinking.
 
-## Your Need for Cognition Score
+## Your Need for Cognition score
 
 <div class="chart-container">
 ```{r ncs_chart, fig.width=8, fig.height=5, fig.align='center'}
@@ -698,7 +698,7 @@ if(exists("ncs_df") && nrow(ncs_df) > 0) {
 ```
 </div>
 
-### How This Relates to Negotiation
+### How this relates to negotiation
 
 Your Need for Cognition can influence your negotiation approach in several ways:
 
@@ -774,7 +774,7 @@ if(exists("params") && !is.null(params$svo_type) && !is.na(params$svo_type)) {
 }
 ```
 
-## What Your SVO Type Means
+## What your SVO type means
 
 <div class="interpretation-box">
 ```{r svo_interpretation, results='asis'}
@@ -796,7 +796,7 @@ if(exists("params") && !is.null(params$svo_type)) {
 ```
 </div>
 
-## SVO and Negotiation
+## SVO and negotiation
 
 Your Social Value Orientation has important implications for how you approach negotiations:
 
