@@ -279,7 +279,7 @@ ui <- fluidPage(
   
   fluidRow(
     column(8, titlePanel("Negotiation Behaviour Inventory")),
-    column(4, tags$img(src = "mbslogo.jpg", height = "100px", style = "float:right;"))
+    column(4, tags$img(src = "mbslogo.png", height = "100px", style = "float:right;"))
   ),
   
   # Add the preamble
@@ -721,9 +721,9 @@ server <- function(input, output, session) {
     file.copy("report_template.Rmd", tempReport, overwrite = TRUE)
     
     # Copy any assets (like images) to temp directory
-    if(file.exists("www/mbslogo.jpg")) {
+    if(file.exists("www/mbslogo.png")) {
       dir.create(file.path(tempdir(), "www"), showWarnings = FALSE)
-      file.copy("www/mbslogo.jpg", file.path(tempdir(), "www/mbslogo.jpg"), overwrite = TRUE)
+      file.copy("www/mbslogo.png", file.path(tempdir(), "www/mbslogo.png"), overwrite = TRUE)
     }
     
     # Generate the report data

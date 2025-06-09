@@ -94,7 +94,7 @@ table th {
 </style>
 
 <div class="header-logo">
-<img src="www/mbslogo.jpg" alt="MBS Logo" />
+<img src="www/mbslogo.png" alt="MBS Logo" />
 </div>
 
 # `r params$name`
